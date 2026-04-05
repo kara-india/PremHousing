@@ -1,148 +1,171 @@
-.cinematic-overlay.premium-vibe {
+.cinematic-overlay.map-experience {
   background-color: #000;
   z-index: 10001;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  cursor: default;
+  overflow: hidden;
 }
 
-.skip-intro-btn {
+.map-viewport {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+  transition: opacity 1.5s ease;
+}
+
+.map-viewport.hidden {
+  opacity: 0;
+}
+
+.map-viewport.visible {
+  opacity: 1;
+}
+
+.skip-intro-btn.gold-border {
   position: fixed;
   top: 2rem;
   right: 2rem;
   z-index: 10005;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(201, 166, 70, 0.2);
+  background: rgba(0, 0, 0, 0.5);
+  border: 1px solid var(--primary);
   color: var(--primary);
   padding: 0.6rem 1.2rem;
   border-radius: 4px;
   font-size: 0.75rem;
   letter-spacing: 1px;
-  text-transform: uppercase;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  cursor: pointer;
-  transition: all 0.3s;
   backdrop-filter: blur(5px);
 }
 
-.skip-intro-btn:hover {
-  background: rgba(201, 166, 70, 0.1);
-  border-color: var(--primary);
+.scene.full-center {
+  z-index: 10;
 }
 
-.full-center {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  width: 100%;
-  height: 100%;
-}
-
-/* Fingerprint Scene */
-.fingerprint-wrapper {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 2rem;
-}
-
-.fingerprint-trigger {
+/* Gold Fingerprint */
+.fingerprint-trigger-gold {
   background: none;
   border: none;
   color: var(--primary);
   cursor: pointer;
   z-index: 5;
-  transition: transform 0.3s;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  filter: drop-shadow(0 0 10px rgba(201, 166, 70, 0.3));
 }
 
-.fingerprint-trigger:hover {
+.fingerprint-trigger-gold:hover {
   transform: scale(1.05);
+  filter: drop-shadow(0 0 20px rgba(201, 166, 70, 0.5));
 }
 
-.scan-circle {
+.scan-pulse {
   position: absolute;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  width: 120px;
-  height: 120px;
-  background: radial-gradient(circle, var(--primary) 0%, transparent 70%);
+  width: 100px;
+  height: 100px;
+  border: 1px solid var(--primary);
   border-radius: 50%;
   pointer-events: none;
 }
 
-.scan-text {
+.scan-text-premium {
+  margin-top: 2rem;
   color: #fff;
-  font-size: 0.9rem;
-  letter-spacing: 4px;
+  font-size: 0.8rem;
+  letter-spacing: 5px;
   text-transform: uppercase;
-  font-weight: 300;
+  font-weight: 400;
   opacity: 0.8;
+  text-align: center;
 }
 
-/* Message Scene */
-.mumbai-message {
+/* Emotional Text Overlay */
+.emotional-mumbai-text {
   font-family: var(--font-serif);
-  font-size: 3.5rem;
+  font-size: 3rem;
   color: #fff;
   font-weight: 300;
-  letter-spacing: -1px;
+  text-align: center;
+  z-index: 20;
+  text-shadow: 0 4px 20px rgba(0,0,0,0.5);
 }
 
-/* Skyline Scene */
-.skyline-bg {
-  position: relative;
-  width: 100%;
-  height: 100vh;
-}
-
-.parallax-img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.golden-overlay {
+/* Map Overlays */
+.map-overlay-labels {
   position: absolute;
-  inset: 0;
-  background: linear-gradient(to bottom, rgba(0,0,0,0.5), transparent, rgba(0,0,0,0.5));
-  box-shadow: inset 0 0 100px rgba(201, 166, 70, 0.1);
-}
-
-/* Zoom Scene */
-.zoom-container {
-  width: 100%;
-  height: 100vh;
-  overflow: hidden;
-}
-
-.zoom-img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.zoom-overlay-text {
-  position: absolute;
-  bottom: 10%;
+  top: 20%;
   left: 50%;
   transform: translateX(-50%);
-  color: var(--primary);
-  font-size: 1.5rem;
+  text-align: center;
+  z-index: 15;
+  pointer-events: none;
+}
+
+.location-name {
+  display: block;
   font-family: var(--font-serif);
-  letter-spacing: 2px;
+  font-size: 4rem;
+  color: #fff;
+  margin-bottom: 0.5rem;
+  text-shadow: 0 0 30px rgba(0,0,0,1);
+}
+
+.location-tagline {
+  color: var(--primary);
+  font-size: 1rem;
   text-transform: uppercase;
+  letter-spacing: 8px;
+  opacity: 0;
+  animation: fade-in-up 1s forwards 0.5s;
+}
+
+/* Pulsing Marker */
+.marker-container {
+  position: absolute;
+  top: 60%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 15;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+}
+
+.gold-pulse-marker {
+  width: 20px;
+  height: 20px;
+  background-color: var(--primary);
+  border-radius: 50%;
+  box-shadow: 0 0 0 rgba(201, 166, 70, 0.4);
+  animation: marker-pulse 2s infinite;
+}
+
+.marker-label {
+  color: #fff;
+  font-family: var(--font-serif);
+  font-size: 1.2rem;
+  white-space: nowrap;
+  background: rgba(0,0,0,0.6);
+  padding: 0.4rem 1rem;
+  border-radius: 4px;
+  border: 1px solid rgba(201, 166, 70, 0.3);
+  backdrop-filter: blur(5px);
+}
+
+@keyframes marker-pulse {
+  0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(201, 166, 70, 0.7); }
+  70% { transform: scale(1); box-shadow: 0 0 0 20px rgba(201, 166, 70, 0); }
+  100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(201, 166, 70, 0); }
+}
+
+@keyframes fade-in-up {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 @media (max-width: 768px) {
-  .mumbai-message {
-    font-size: 2rem;
-    text-align: center;
-    padding: 0 2rem;
-  }
+  .location-name { font-size: 2.5rem; }
+  .emotional-mumbai-text { font-size: 2rem; padding: 0 2rem; }
 }

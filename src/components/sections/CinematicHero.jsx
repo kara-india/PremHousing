@@ -1,46 +1,163 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Fingerprint, X } from 'lucide-react';
+import mapboxgl from 'mapbox-gl';
+import { gsap } from 'gsap';
+import 'mapbox-gl/dist/mapbox-gl.css';
 import './CinematicHero.css';
 
+// Using a token for demo - please replace with your own pk token in .env
+mapboxgl.accessToken = import.meta.env.VITE_MAPBOX_TOKEN || 'pk.eyJ1IjoibWFwYm94YWRtaW4iLCJhIjoiY2x0eXJ0Z3N5MDBiazJrcXF0eGZ6c3g3dyJ9.YOUR_TOKEN';
+
 const CinematicHero = ({ onComplete }) => {
-  const [step, setStep] = useState(0); // 0: Init, 1: Fingerprint, 2: Message, 3: Skyline, 4: Zoom, 5: Complete
+  const mapContainer = useRef(null);
+  const map = useRef(null);
+  const [step, setStep] = useState(0); 
   const [isSkipped, setIsSkipped] = useState(false);
 
   useEffect(() => {
-    // Check if user has already seen the intro
     const hasSeenIntro = localStorage.getItem('prem_housing_intro_seen');
     if (hasSeenIntro) {
-      onComplete();
-      setIsSkipped(true);
-    } else {
-      setStep(1);
+      handleComplete();
+      return;
     }
-  }, [onComplete]);
+    setStep(1);
+  }, []);
 
-  const handleStartScan = () => {
-    setStep(2);
-    // SCENE 2: Message (1s)
-    setTimeout(() => {
-      setStep(3);
-      // SCENE 3: Skyline (2s)
-      setTimeout(() => {
+  const initMap = () => {
+    if (map.current) return;
+
+    map.current = new mapboxgl.Map({
+      container: mapContainer.current,
+      style: 'mapbox://styles/mapbox/dark-v11',
+      center: [72.8777, 19.0760], // Mumbai Start
+      zoom: 1, // Start very wide for first frame
+      pitch: 45,
+      bearing: -10,
+      interactive: false,
+      attributionControl: false
+    });
+
+    map.current.on('style.load', () => {
+      // Enable 3D Buildings
+      const layers = map.current.getStyle().layers;
+      const labelLayerId = layers.find(
+        (layer) => layer.type === 'symbol' && layer.layout['text-field']
+      ).id;
+
+      map.current.addLayer(
+        {
+          id: '3d-buildings',
+          source: 'composite',
+          'source-layer': 'building',
+          filter: ['==', 'extrude', 'true'],
+          type: 'fill-extrusion',
+          minzoom: 12,
+          paint: {
+            'fill-extrusion-color': '#1f1f1f',
+            'fill-extrusion-height': [
+              'interpolate', ['linear'], ['zoom'],
+              15, 0,
+              15.05, ['get', 'height']
+            ],
+            'fill-extrusion-base': [
+              'interpolate', ['linear'], ['zoom'],
+              15, 0,
+              15.05, ['get', 'min_height']
+            ],
+            'fill-extrusion-opacity': 0.7
+          }
+        },
+        labelLayerId
+      );
+
+      // Add Gold Lighting
+      map.current.setLight({
+        anchor: 'viewport',
+        color: '#C9A646',
+        intensity: 0.4,
+        position: [1.5, 90, 80]
+      });
+
+      // Add Atmospheric Fog
+      map.current.setFog({
+        'range': [0.5, 10],
+        'color': '#121212',
+        'horizon-blend': 0.1,
+        'high-color': '#242424',
+        'space-color': '#000000',
+        'star-intensity': 0.15
+      });
+    });
+  };
+
+  const startTimeline = () => {
+    initMap();
+    const tl = gsap.timeline();
+
+    // Scene 1: Fingerprint (1.5s) - Manual Trigger
+    // Scene 2: Message (1s)
+    tl.to({}, { duration: 1.5, onComplete: () => setStep(2) });
+
+    // Scene 3: Map Reveal + Mumbai Fly (2.5s - 5s)
+    tl.to({}, { 
+      duration: 1, 
+      onComplete: () => {
+        setStep(3);
+        map.current.flyTo({
+          center: [72.8777, 19.0760],
+          zoom: 9.5,
+          pitch: 45,
+          bearing: -10,
+          speed: 1.2,
+          curve: 1.4,
+          essential: true
+        });
+      }
+    });
+
+    // Scene 4: Zoom to Mira Road (5s - 8s)
+    tl.to({}, { 
+      duration: 2.5, 
+      onComplete: () => {
         setStep(4);
-        // SCENE 4: Zoom (3s)
-        setTimeout(() => {
-          handleComplete();
-        }, 3000);
-      }, 2000);
-    }, 1500); // 1.5s fingerprint scan
+        map.current.flyTo({
+          center: [72.8710, 19.2810],
+          zoom: 14.5,
+          pitch: 55,
+          speed: 0.8,
+          essential: true
+        });
+      }
+    });
+
+    // Final Snap to Prem Housing (8s - 9s)
+    tl.to({}, { 
+      duration: 2.5, 
+      onComplete: () => {
+        map.current.flyTo({
+          center: [72.87, 19.29],
+          zoom: 17.8,
+          pitch: 65,
+          bearing: 15,
+          speed: 0.6,
+          essential: true
+        });
+      }
+    });
+
+    // Final Reveal (9s+)
+    tl.to({}, { 
+      duration: 2.5, 
+      onComplete: () => {
+        handleComplete();
+      }
+    });
   };
 
   const handleComplete = () => {
     localStorage.setItem('prem_housing_intro_seen', 'true');
     onComplete();
-  };
-
-  const skipIntro = () => {
-    handleComplete();
     setIsSkipped(true);
   };
 
@@ -48,103 +165,71 @@ const CinematicHero = ({ onComplete }) => {
 
   return (
     <motion.div 
-      className="cinematic-overlay premium-vibe"
+      className="cinematic-overlay map-experience"
       initial={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      transition={{ duration: 1 }}
+      transition={{ duration: 1.2 }}
     >
-      <button className="skip-intro-btn" onClick={skipIntro}>
+      <button className="skip-intro-btn gold-border" onClick={handleComplete}>
         Skip Intro <X size={14} />
       </button>
+
+      <div ref={mapContainer} className={`map-viewport ${step >= 3 ? 'visible' : 'hidden'}`} />
 
       <AnimatePresence mode="wait">
         {step === 1 && (
           <motion.div 
             key="scan-scene"
             className="scene full-center"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
           >
             <div className="fingerprint-wrapper">
               <motion.div 
-                className="scan-circle"
-                animate={{ scale: [1, 1.05, 1], opacity: [0.5, 0.8, 0.5] }}
+                className="scan-pulse"
+                animate={{ scale: [1, 1.4, 1.8], opacity: [0.3, 0.1, 0] }}
                 transition={{ duration: 2, repeat: Infinity }}
               />
-              <button className="fingerprint-trigger" onClick={handleStartScan}>
-                <Fingerprint size={80} strokeWidth={1} />
+              <button 
+                className="fingerprint-trigger-gold" 
+                onClick={startTimeline}
+              >
+                <Fingerprint size={100} strokeWidth={0.5} />
               </button>
-              <p className="scan-text">Tap to Enter Mumbai</p>
+              <p className="scan-text-premium">Tap to Unlock Mumbai</p>
             </div>
           </motion.div>
         )}
 
         {step === 2 && (
           <motion.div 
-            key="message-scene"
-            className="scene full-center bg-black"
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 1.1 }}
-            transition={{ duration: 0.8, ease: "easeOut" }}
-          >
-            <h1 className="mumbai-message">Aap Mumbai aa sakte hai</h1>
-          </motion.div>
-        )}
-
-        {step === 3 && (
-          <motion.div 
-            key="skyline-scene"
-            className="scene"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
+            key="msg-scene"
+            className="scene full-center bg-transparent"
+            initial={{ opacity: 0, letterSpacing: '15px' }}
+            animate={{ opacity: 1, letterSpacing: '5px' }}
             exit={{ opacity: 0 }}
+            transition={{ duration: 1 }}
           >
-            <motion.div 
-              className="skyline-bg"
-              initial={{ scale: 1.1, x: -20 }}
-              animate={{ scale: 1, x: 0 }}
-              transition={{ duration: 2, ease: "linear" }}
-            >
-              <img 
-                src="https://images.unsplash.com/photo-1570160227045-20d2f0991667?ixlib=rb-4.0.3&auto=format&fit=crop&w=2000&q=80" 
-                alt="Mumbai Skyline" 
-                className="parallax-img"
-              />
-              <div className="golden-overlay"></div>
-            </motion.div>
+            <h1 className="emotional-mumbai-text">Aap Mumbai aa sakte hai</h1>
           </motion.div>
         )}
 
         {step === 4 && (
           <motion.div 
-            key="zoom-scene"
+            key="location-overlay"
             className="scene"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
           >
-            <motion.div 
-              className="zoom-container"
-              initial={{ scale: 1 }}
-              animate={{ scale: 4, filter: 'blur(20px)' }}
-              transition={{ duration: 3, ease: [0.65, 0, 0.35, 1] }}
-            >
-              <img 
-                src="https://images.unsplash.com/photo-1529655683826-aba9b3e77383?ixlib=rb-4.0.3&auto=format&fit=crop&w=2000&q=80" 
-                alt="Mumbai Aerial Zoom" 
-                className="zoom-img"
-              />
-            </motion.div>
-            <motion.div 
-              className="zoom-overlay-text"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 1, duration: 1 }}
-            >
-              <span>Your home starts here</span>
-            </motion.div>
+            <div className="map-overlay-labels">
+              <span className="location-name">Mira Road East</span>
+              <span className="location-tagline">Your home starts here</span>
+            </div>
+            
+            {/* Pulsing Marker at Approx. Location */}
+            <div className="marker-container">
+              <div className="gold-pulse-marker"></div>
+              <div className="marker-label">Prem Housing</div>
+            </div>
           </motion.div>
         )}
       </AnimatePresence>
