@@ -1,5 +1,5 @@
 import React from 'react';
-import { Home, MapPin, Phone, Mail, Instagram, Facebook, Twitter, Linkedin } from 'lucide-react';
+import { Home, MapPin, Phone, Mail, Globe, Share2, MessageCircle, Hash } from 'lucide-react';
 import './Footer.css';
 
 const Footer = () => {
@@ -16,10 +16,10 @@ const Footer = () => {
               Premier real estate agency in Mira-Bhayandar providing comprehensive property solutions for buyers, sellers, and investors.
             </p>
             <div className="social-links-footer">
-              <a href="#" aria-label="Facebook"><Facebook size={20} /></a>
-              <a href="#" aria-label="Instagram"><Instagram size={20} /></a>
-              <a href="#" aria-label="Twitter"><Twitter size={20} /></a>
-              <a href="#" aria-label="LinkedIn"><Linkedin size={20} /></a>
+              <a href="#" aria-label="Facebook"><Globe size={20} /></a>
+              <a href="#" aria-label="Instagram"><MessageCircle size={20} /></a>
+              <a href="#" aria-label="Twitter"><Hash size={20} /></a>
+              <a href="#" aria-label="LinkedIn"><Share2 size={20} /></a>
             </div>
           </div>
           
@@ -54,7 +54,7 @@ const Footer = () => {
               </li>
               <li>
                 <Phone size={18} className="text-secondary" />
-                <span>+91 98765 43210</span>
+                <span>+91 98333 25547</span>
               </li>
               <li>
                 <Mail size={18} className="text-secondary" />
@@ -79,7 +79,7 @@ const Footer = () => {
 
       {/* WhatsApp Floating Button */}
       <a 
-        href="https://wa.me/919876543210" 
+        href="https://wa.me/919833325547" 
         target="_blank" 
         rel="noopener noreferrer" 
         className="whatsapp-float"

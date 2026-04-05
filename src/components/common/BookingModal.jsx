@@ -87,7 +87,7 @@ const BookingModal = ({ isOpen, onClose, propertyName }) => {
             <div className="whatsapp-fallback">
               <p>Or faster booking via</p>
               <a 
-                href={`https://wa.me/919876543210?text=Hi, I want to book a site visit for ${propertyName}`}
+                href={`https://wa.me/919833325547?text=Hi, I want to book a site visit for ${propertyName}`}
                 target="_blank"
                 className="btn btn-outline w-full whatsapp-btn"
               >
