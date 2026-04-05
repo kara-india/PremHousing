@@ -1,17 +1,19 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@500;600;700&display=swap');
 
 :root {
-  --primary: #1e3a8a; /* Deep blue */
-  --primary-light: #3b82f6;
-  --secondary: #fbbf24; /* Amber */
-  --accent: #2563eb; /* Royal blue */
-  --background: #f8fafc;
-  --surface: #ffffff;
-  --text-main: #0f172a;
-  --text-muted: #64748b;
-  --border: #e2e8f0;
+  --primary: #C9A646;        /* Elegant Gold */
+  --primary-light: #DFBF6E;
+  --secondary: #2C2C2C;      /* Dark accent for text */
+  --accent: #B8860B;         /* Dark Gold */
+  --background: #FFFFFF;     /* Clean White background */
+  --surface: #F9F7F2;        /* Off-white / light beige */
+  --text-main: #1A1A1A;      /* Rich black for readability */
+  --text-muted: #666666;
+  --border: #E8E2D5;
+  --glass-bg: rgba(255, 255, 255, 0.9);
+  --glass-border: rgba(201, 166, 70, 0.2);
   
-  --font-sans: 'Inter', sans-serif;
+  --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
   --font-serif: 'Playfair Display', serif;
 }
 
@@ -93,25 +95,47 @@ ul {
 }
 
 .btn-primary {
-  background-color: var(--primary);
+  background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
   color: white;
+  box-shadow: 0 4px 15px rgba(201, 166, 70, 0.3);
 }
 
 .btn-primary:hover {
-  background-color: var(--primary-light);
+  background: linear-gradient(135deg, var(--primary-light) 0%, var(--primary) 100%);
   transform: translateY(-2px);
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  box-shadow: 0 8px 25px rgba(201, 166, 70, 0.4);
 }
 
-.btn-secondary {
-  background-color: var(--secondary);
-  color: var(--text-main);
+/* Shine Effect */
+.shine-btn {
+  position: relative;
+  overflow: hidden;
 }
 
-.btn-secondary:hover {
-  background-color: #f59e0b;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+.shine-btn::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 50%;
+  height: 100%;
+  background: linear-gradient(
+    to right,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(255, 255, 255, 0.3) 100%
+  );
+  transform: skewX(-25deg);
+  transition: 0.75s;
+}
+
+.shine-btn:hover::before {
+  left: 150%;
+}
+
+@keyframes shine {
+  100% {
+    left: 125%;
+  }
 }
 
 .btn-outline {

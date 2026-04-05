@@ -10,11 +10,12 @@
 }
 
 .top-bar {
-  background-color: var(--primary);
-  color: white;
+  background-color: #1A1A1A;
+  color: #C9A646;
   padding: 0.5rem 0;
   font-size: 0.875rem;
   transition: all 0.3s ease;
+  border-bottom: 1px solid rgba(201, 166, 70, 0.2);
 }
 
 .navbar.scrolled .top-bar {
@@ -114,7 +115,7 @@
   left: 0;
   width: 0;
   height: 2px;
-  background-color: var(--secondary);
+  background-color: var(--primary);
   transition: width 0.3s ease;
 }
 

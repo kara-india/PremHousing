@@ -97,18 +97,18 @@
 }
 
 .type-sale {
-  background-color: rgba(37, 99, 235, 0.9);
+  background-color: var(--primary);
   color: white;
 }
 
 .type-rent {
-  background-color: rgba(16, 185, 129, 0.9);
+  background-color: var(--secondary);
   color: white;
 }
 
 .tag.highlight {
-  background-color: rgba(251, 191, 36, 0.9);
-  color: var(--text-main);
+  background-color: var(--accent);
+  color: white;
 }
 
 .property-details {

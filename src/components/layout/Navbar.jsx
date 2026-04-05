@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
+import { Link, useLocation } from 'react-router-dom';
 import { Menu, X, Phone, MapPin } from 'lucide-react';
 import './Navbar.css';
 
 const Navbar = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const location = useLocation();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -16,11 +18,11 @@ const Navbar = () => {
   }, []);
 
   const navLinks = [
-    { name: 'Home', href: '#home' },
-    { name: 'Services', href: '#services' },
-    { name: 'Properties', href: '#properties' },
-    { name: 'About', href: '#about' },
-    { name: 'Contact', href: '#contact' },
+    { name: 'Home', href: '/' },
+    { name: 'Services', href: '/#services' },
+    { name: 'Properties', href: '/#properties' },
+    { name: 'About', href: '/#about' },
+    { name: 'Contact', href: '/#contact' },
   ];
 
   return (
@@ -42,17 +44,21 @@ const Navbar = () => {
       {/* Main Navigation */}
       <div className="main-nav">
         <div className="container nav-container">
-          <a href="#" className="logo">
+          <Link to="/" className="logo">
             <span className="logo-icon">PH</span>
             <span className="logo-text">Prem Housing</span>
-          </a>
+          </Link>
 
           {/* Desktop Menu */}
           <nav className="desktop-menu">
             <ul>
               {navLinks.map((link) => (
                 <li key={link.name}>
-                  <a href={link.href}>{link.name}</a>
+                  {link.href.startsWith('/#') ? (
+                    <a href={link.href}>{link.name}</a>
+                  ) : (
+                    <Link to={link.href}>{link.name}</Link>
+                  )}
                 </li>
               ))}
             </ul>
@@ -75,12 +81,11 @@ const Navbar = () => {
         <ul>
           {navLinks.map((link) => (
             <li key={link.name}>
-              <a 
-                href={link.href}
-                onClick={() => setIsMobileMenuOpen(false)}
-              >
-                {link.name}
-              </a>
+              {link.href.startsWith('/#') ? (
+                <a href={link.href} onClick={() => setIsMobileMenuOpen(false)}>{link.name}</a>
+              ) : (
+                <Link to={link.href} onClick={() => setIsMobileMenuOpen(false)}>{link.name}</Link>
+              )}
             </li>
           ))}
         </ul>
