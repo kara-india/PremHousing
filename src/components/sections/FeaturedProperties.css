@@ -1,0 +1,171 @@
+.properties-section {
+  background-color: var(--background);
+}
+
+.properties-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  margin-bottom: 3rem;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+}
+
+.properties-header .section-title::after {
+  margin: 1rem 0 0;
+}
+
+.property-filters {
+  display: flex;
+  gap: 0.5rem;
+  background-color: white;
+  padding: 0.5rem;
+  border-radius: 0.5rem;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+}
+
+.filter-btn {
+  padding: 0.5rem 1.25rem;
+  border: none;
+  background: transparent;
+  font-weight: 500;
+  color: var(--text-muted);
+  border-radius: 0.25rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.filter-btn.active {
+  background-color: var(--primary);
+  color: white;
+}
+
+.properties-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 2rem;
+}
+
+.property-card {
+  background-color: white;
+  border-radius: 1rem;
+  overflow: hidden;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05);
+  transition: all 0.3s ease;
+  border: 1px solid var(--border);
+}
+
+.property-card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+}
+
+.property-image-wrapper {
+  position: relative;
+  height: 220px;
+  overflow: hidden;
+}
+
+.property-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.5s ease;
+}
+
+.property-card:hover .property-image {
+  transform: scale(1.05);
+}
+
+.property-tags {
+  position: absolute;
+  top: 1rem;
+  left: 1rem;
+  right: 1rem;
+  display: flex;
+  justify-content: space-between;
+}
+
+.tag {
+  padding: 0.25rem 0.75rem;
+  border-radius: 2rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  backdrop-filter: blur(4px);
+}
+
+.type-sale {
+  background-color: rgba(37, 99, 235, 0.9);
+  color: white;
+}
+
+.type-rent {
+  background-color: rgba(16, 185, 129, 0.9);
+  color: white;
+}
+
+.tag.highlight {
+  background-color: rgba(251, 191, 36, 0.9);
+  color: var(--text-main);
+}
+
+.property-details {
+  padding: 1.5rem;
+}
+
+.property-price {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--primary);
+  margin-bottom: 0.5rem;
+  font-family: var(--font-sans);
+}
+
+.property-title {
+  font-size: 1.25rem;
+  margin-bottom: 0.5rem;
+  color: var(--text-main);
+}
+
+.property-location {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--text-muted);
+  font-size: 0.875rem;
+  margin-bottom: 1.25rem;
+}
+
+.property-features {
+  display: flex;
+  justify-content: space-between;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--border);
+  margin-bottom: 1.25rem;
+}
+
+.feature {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+  color: var(--text-muted);
+  font-size: 0.875rem;
+}
+
+.w-full {
+  width: 100%;
+}
+
+.mt-12 {
+  margin-top: 3rem;
+}
+
+@media (max-width: 768px) {
+  .properties-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
