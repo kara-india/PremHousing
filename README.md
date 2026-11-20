@@ -5,6 +5,7 @@ React + Vite website for Prem Housing, focused on residential and commercial pro
 ## Current implementation
 - Responsive public landing page with Buy, Rent, Sell and Commercial enquiry flows.
 - Locality navigation and lead form that prepares a WhatsApp enquiry.
+- Buy, rent and commercial searches query published Supabase listings with locality, price, deposit, BHK, area and furnishing filters.
 - No fabricated live property listings or unverifiable listing counts.
 - SEO metadata, privacy notice, Vercel SPA routing and baseline security headers.
 - WhatsApp destination can be configured with `VITE_WHATSAPP_NUMBER`.
@@ -18,12 +19,12 @@ npm run build
 ```
 
 ## Environment
-Copy `.env.example` to `.env.local` and set `VITE_WHATSAPP_NUMBER` to the official Prem Housing WhatsApp number in international digits-only format. Do not commit `.env.local` or other secrets.
+Copy `.env.example` to `.env.local`, then set the Vite Supabase URL and publishable key, plus `VITE_WHATSAPP_NUMBER` to the official Prem Housing WhatsApp number in international digits-only format. The publishable key is intended for browser use; never add a Supabase secret or service-role key to a `VITE_` variable. Do not commit `.env.local`.
 
 ## Database foundation
 The first Supabase migration is in `supabase/migrations`. It creates locality, property, and lead tables with PostGIS fields, search indexes, constraints, and row-level security. It intentionally contains no property seed data. Public roles can read published properties and localities; leads have no public insert or read policy yet and must be submitted through a trusted server-side endpoint.
 
-Staff property and lead access is granted only when Supabase Auth users have a trusted `app_metadata.role` claim set to `staff` or `admin`; property deletion requires `admin`. Do not use user-editable `user_metadata` for authorization. Apply the migration only after linking the intended Supabase project and reviewing its existing schema. A hosted project has not been linked or changed by this repository setup.
+Staff property and lead access is granted only when Supabase Auth users have a trusted `app_metadata.role` claim set to `staff` or `admin`; property deletion requires `admin`. Do not use user-editable `user_metadata` for authorization. The owner applied this schema in the `PremHousing` Supabase project. Its tables are present with RLS enabled, and the current inventory is empty. The app reads published listings with the publishable key; the local CLI project is not linked to the hosted project.
 
 See [`docs/implementation-plan.md`](docs/implementation-plan.md) for the phased delivery plan and external setup decisions.
 

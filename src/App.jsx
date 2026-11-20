@@ -1,10 +1,12 @@
-import { useMemo, useState } from 'react';
+import { createElement, useMemo, useState } from 'react';
 import {
   ArrowDownRight, ArrowRight, Building2, Check, ChevronDown, Clock3,
   Home, KeyRound, MapPin, Menu, MessageCircle, Phone, Search, ShieldCheck,
   Store, X
 } from 'lucide-react';
 import './App.css';
+import { supabase } from './lib/supabase';
+import PropertyResults from './components/sections/PropertyResults';
 
 const WHATSAPP_NUMBER = (import.meta.env.VITE_WHATSAPP_NUMBER || '919833325547').replace(/[^0-9]/g, '');
 
@@ -31,22 +33,79 @@ function App() {
   const [propertyType, setPropertyType] = useState('Any property');
   const [locality, setLocality] = useState('Mira Road');
   const [budget, setBudget] = useState('');
+  const [minimumDeposit, setMinimumDeposit] = useState('');
+  const [minimumArea, setMinimumArea] = useState('');
+  const [maximumArea, setMaximumArea] = useState('');
+  const [furnishing, setFurnishing] = useState('Any furnishing');
+  const [properties, setProperties] = useState([]);
+  const [searchState, setSearchState] = useState('idle');
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [lead, setLead] = useState({ name: '', phone: '', requirement: 'Rent a property', details: '' });
   const [notice, setNotice] = useState('');
 
-  const requirementMessage = useMemo(() => {
-    return `Hello Prem Housing, I would like help with a property in Mira-Bhayandar.\nRequirement: ${transaction}\nProperty type: ${propertyType}\nPreferred area: ${locality || 'Flexible'}\nBudget: ${budget || 'Please discuss'}\nPlease share suitable options and confirm availability.`;
-  }, [transaction, propertyType, locality, budget]);
+  const requirementMessage = useMemo(() => (
+    `Requirement: ${transaction}; Property type: ${propertyType}; Preferred area: ${locality || 'Flexible'}; Maximum price: ${budget || 'Not specified'}; Minimum deposit: ${minimumDeposit || 'Not specified'}; Area: ${minimumArea || 'Any'}–${maximumArea || 'Any'} sq ft; Furnishing: ${furnishing}`
+  ), [transaction, propertyType, locality, budget, minimumDeposit, minimumArea, maximumArea, furnishing]);
 
-  function submitSearch(event) {
+  async function submitSearch(event) {
     event.preventDefault();
+    const requirement = transaction === 'Buy' ? 'Buy a property' : transaction === 'Rent' ? 'Rent a property' : transaction === 'Sell' ? 'Sell my property' : 'Commercial property';
     setLead((current) => ({
       ...current,
-      requirement: transaction === 'Buy' ? 'Buy a property' : transaction === 'Rent' ? 'Rent a property' : transaction === 'Sell' ? 'Sell my property' : 'Commercial property',
-      details: `Property type: ${propertyType}; Area: ${locality}; Budget: ${budget || 'Not specified'}`,
+      requirement,
+      details: requirementMessage,
     }));
-    document.getElementById('contact')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+    if (transaction === 'Sell') {
+      setSearchState('idle');
+      document.getElementById('contact')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      return;
+    }
+    if (!supabase) {
+      setSearchState('error');
+      document.getElementById('property-results')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      return;
+    }
+
+    setSearchState('loading');
+    let query = supabase
+      .from('properties')
+      .select('id,title,property_type,transaction_type,price,deposit,area_sqft,bedrooms,furnishing,description,features,image_urls,locality:localities!inner(name)')
+      .eq('status', 'published')
+      .order('price', { ascending: true })
+      .limit(24);
+
+    if (transaction === 'Buy') query = query.eq('transaction_type', 'sale');
+    if (transaction === 'Rent') query = query.eq('transaction_type', 'rent');
+    if (transaction === 'Commercial' || ['Shop', 'Office', 'Commercial unit'].includes(propertyType)) {
+      query = query.eq('property_type', 'commercial');
+    }
+    if (transaction !== 'Commercial' && !['Shop', 'Office', 'Commercial unit'].includes(propertyType)) {
+      if (propertyType === '1 BHK') query = query.eq('bedrooms', 1);
+      if (propertyType === '2 BHK') query = query.eq('bedrooms', 2);
+      if (propertyType === '3 BHK or larger') query = query.gte('bedrooms', 3);
+    }
+    if (locality && locality !== 'Flexible / nearby') query = query.ilike('locality.name', `%${locality}%`);
+    const maxPrice = Number(budget);
+    if (Number.isFinite(maxPrice) && maxPrice > 0) query = query.lte('price', maxPrice);
+    const deposit = Number(minimumDeposit);
+    if (Number.isFinite(deposit) && deposit > 0) query = query.gte('deposit', deposit);
+    const areaFrom = Number(minimumArea);
+    if (Number.isFinite(areaFrom) && areaFrom > 0) query = query.gte('area_sqft', areaFrom);
+    const areaTo = Number(maximumArea);
+    if (Number.isFinite(areaTo) && areaTo > 0) query = query.lte('area_sqft', areaTo);
+    if (furnishing !== 'Any furnishing') query = query.eq('furnishing', furnishing);
+
+    try {
+      const { data, error } = await query;
+      if (error) throw error;
+      setProperties(data ?? []);
+      setSearchState('ready');
+    } catch {
+      setProperties([]);
+      setSearchState('error');
+    }
+    document.getElementById('property-results')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
 
   function submitLead(event) {
@@ -133,13 +192,37 @@ function App() {
               <form className="search-form" onSubmit={submitSearch}>
                 <label className="field"><span>Preferred locality</span><span className="select-wrap"><MapPin size={17} /><select value={locality} onChange={(e) => setLocality(e.target.value)}><option>Mira Road</option><option>Mira Road East</option><option>Mira Road West</option><option>Bhayandar East</option><option>Bhayandar West</option><option>Kashimira</option><option>Flexible / nearby</option></select><ChevronDown size={15} /></span></label>
                 <label className="field"><span>Property type</span><span className="select-wrap"><Building2 size={17} /><select value={propertyType} onChange={(e) => setPropertyType(e.target.value)}><option>Any property</option><option>1 BHK</option><option>2 BHK</option><option>3 BHK or larger</option><option>Shop</option><option>Office</option><option>Commercial unit</option></select><ChevronDown size={15} /></span></label>
-                <label className="field"><span>Budget (optional)</span><input value={budget} onChange={(e) => setBudget(e.target.value)} placeholder="e.g. ₹25,000 / month" /></label>
+                <label className="field"><span>Maximum price (₹)</span><input type="number" min="0" step="1000" value={budget} onChange={(e) => setBudget(e.target.value)} placeholder="e.g. 25000" /></label>
+                <label className="field"><span>Minimum deposit (₹)</span><input type="number" min="0" step="1000" value={minimumDeposit} onChange={(e) => setMinimumDeposit(e.target.value)} placeholder="Optional" /></label>
                 <button className="button button-dark search-submit" type="submit"><Search size={17} /> Match my requirement</button>
+                <details className="search-advanced">
+                  <summary>More filters</summary>
+                  <div className="search-advanced-fields">
+                    <label className="field"><span>Minimum area (sq ft)</span><input type="number" min="0" value={minimumArea} onChange={(e) => setMinimumArea(e.target.value)} placeholder="Any" /></label>
+                    <label className="field"><span>Maximum area (sq ft)</span><input type="number" min="0" value={maximumArea} onChange={(e) => setMaximumArea(e.target.value)} placeholder="Any" /></label>
+                    <label className="field"><span>Furnishing</span><select value={furnishing} onChange={(e) => setFurnishing(e.target.value)}><option>Any furnishing</option><option value="unfurnished">Unfurnished</option><option value="semi-furnished">Semi-furnished</option><option value="furnished">Furnished</option></select></label>
+                  </div>
+                </details>
               </form>
               <p className="search-disclaimer">We confirm current availability before sharing a property. No unverified listing claims.</p>
             </div>
           </div>
         </section>
+
+        <div className="wrap">
+          <PropertyResults
+            state={searchState}
+            properties={properties}
+            onEnquire={(property) => {
+              setLead((current) => ({
+                ...current,
+                requirement: property.transaction_type === 'sale' ? 'Buy a property' : 'Rent a property',
+                details: `Interested in ${property.title} in ${property.locality?.name ?? 'Mira-Bhayandar'}. ${requirementMessage}`,
+              }));
+              document.getElementById('contact')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }}
+          />
+        </div>
 
         <section className="section services-section" id="services">
           <div className="wrap">
@@ -148,9 +231,9 @@ function App() {
               <p>Whether you’re finding a first home, moving tenants into a property, selling a flat or choosing a shop, start with a conversation grounded in the local market.</p>
             </div>
             <div className="service-grid">
-              {services.map(({ icon: Icon, title, text, action }, index) => (
+              {services.map(({ icon, title, text, action }, index) => (
                 <button className="service-card" key={title} onClick={() => chooseService(action)}>
-                  <span className="service-index">0{index + 1}</span><span className="service-icon"><Icon size={23} strokeWidth={1.6} /></span>
+                  <span className="service-index">0{index + 1}</span><span className="service-icon">{createElement(icon, { size: 23, strokeWidth: 1.6 })}</span>
                   <h3>{title}</h3><p>{text}</p><span className="service-link">Tell us what you need <ArrowRight size={16} /></span>
                 </button>
               ))}
