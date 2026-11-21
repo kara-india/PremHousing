@@ -1,6 +1,6 @@
 # BidMetric Supabase audit for PREM
 
-Audit date: 2026-11-22. Read-only inspection; no user rows were queried and no schema changes were made.
+Audit date: 2026-11-22. The initial schema/security inspection was read-only and queried no user rows. A security migration was later applied to the active project at the owner's request; the changes and post-apply checks are recorded below.
 
 ## Product and repository decisions
 
@@ -44,14 +44,24 @@ Supabase Security Advisor reported `rls_disabled_in_public` at **ERROR** for 12 
 
 Read-only privilege inspection confirmed `anon` and `authenticated` have table-level `SELECT` grants across the public tables. RLS is disabled on those 12 tables. Treat their Data API access as potentially unrestricted until inspected and remediated. The advisor also reported 29 tables visible to anon and authenticated through GraphQL; three `SECURITY DEFINER` functions callable by anon/authenticated (`accept_bid`, `log_audit_event`, `place_bid`); five functions without a fixed search path; and leaked-password protection disabled.
 
-Do not blanket-enable RLS or revoke grants on the live project without reviewing intended access and application dependencies: that may break BidMetric. The next security task should inspect each affected table's purpose, consumers, and data sensitivity, then prepare a least-privilege migration and validate it on an isolated branch/local stack. Until then, avoid storing PREM customer data or exposing these tables through the PREM client.
+### First-pass remediation applied 2026-11-22
+
+The owner authorized applying necessary database changes to BidMetric. Supabase branching was unavailable on the current plan and this workstation has no Docker/Postgres runtime, so changes were applied as one versioned migration and verified by read-only metadata queries afterward. No user rows were read or changed.
+
+- Enabled RLS and revoked all `PUBLIC`, `anon`, and `authenticated` table privileges on the 12 previously exposed tables above. These tables have no client policies; trusted server operations retain their existing owner/service-role path.
+- Restricted `bids` reads to non-identifying auction fields and removed direct client writes. `place_bid` now requires an authenticated non-owner, an active property, and a positive amount above the current price. `accept_bid` now requires the authenticated property owner and a placed bid belonging to that property.
+- Revoked anon RPC access to `place_bid` and `accept_bid`; `log_audit_event` is trigger-only. Fixed the search path on the audited functions.
+- Post-apply metadata checks confirmed RLS enabled and no client table privileges on all 12 tables; `anon` cannot execute the bid RPCs, while `authenticated` can. Project status remained `ACTIVE_HEALTHY`.
+
+The advisor now reports the 12 locked tables as informational RLS-enabled/no-policy findings. It still reports broad access on `profiles`, `agents`, and `properties`, intentional auction RPCs as authenticated `SECURITY DEFINER` functions, GraphQL visibility for public client-readable tables, and leaked-password protection disabled. These remaining findings need a separate compatibility review before connecting PREM account, listing, or prediction flows. Isolated verification remains pending.
 
 ## Next integration steps
 
 1. Map each PREM screen/query to existing BidMetric tables and identify missing locality/listing relations.
 2. Select one source of truth for identities and roles; reconcile the current PREM `app_metadata.role` check with BidMetric's `profiles.role` and agent tables.
-3. Review the 12 RLS-disabled tables, table grants, policies, and exposed definer functions; prepare a least-privilege remediation plan.
-4. Establish isolated verification (local Supabase with Docker, or an owner-approved development branch). The selected BidMetric project itself is not a test database.
-5. Assess provenance and sufficiency of `market_trends` and valuation fields before building public predictions.
+3. Complete the remaining column/role hardening for `profiles`, `agents`, and `properties` without breaking existing BidMetric clients; enable leaked-password protection in Auth settings.
+4. Establish isolated verification (local Supabase with Docker or a development branch when plan access permits). The live-project metadata checks do not replace isolated verification.
+5. Map current PREM queries to BidMetric's actual schema before connecting the UI; preserve the current mismatch notes above.
+6. Assess provenance and sufficiency of `market_trends` and valuation fields before building public predictions.
 
 Supabase guidance: [Row Level Security](https://supabase.com/docs/guides/database/postgres/row-level-security), [custom claims and RBAC](https://supabase.com/docs/guides/api/custom-claims-and-role-based-access-control-rbac), [local migrations](https://supabase.com/docs/guides/local-development/database-migrations).
