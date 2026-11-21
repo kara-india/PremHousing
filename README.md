@@ -5,7 +5,7 @@ React + Vite website for Prem Housing, focused on residential and commercial pro
 ## Current implementation
 - Responsive public landing page with Buy, Rent, Sell and Commercial enquiry flows.
 - Locality navigation and lead form that prepares a WhatsApp enquiry.
-- Buy, rent and commercial searches query published Supabase listings with locality, price, deposit, BHK, area and furnishing filters.
+- Buy, rent and commercial searches query published Supabase listings with locality, price, deposit, BHK, area and furnishing filters; each result links to a published-only detail page.
 - No fabricated live property listings or unverifiable listing counts.
 - SEO metadata, privacy notice, Vercel SPA routing and baseline security headers.
 - WhatsApp destination can be configured with `VITE_WHATSAPP_NUMBER`.

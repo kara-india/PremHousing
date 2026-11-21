@@ -6,9 +6,8 @@ import {
 } from 'lucide-react';
 import './App.css';
 import { supabase } from './lib/supabase';
+import { whatsappUrl } from './lib/whatsapp';
 import PropertyResults from './components/sections/PropertyResults';
-
-const WHATSAPP_NUMBER = (import.meta.env.VITE_WHATSAPP_NUMBER || '919833325547').replace(/[^0-9]/g, '');
 
 const areas = [
   { name: 'Mira Road East', note: 'Residential homes, resale & rentals', image: 'https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=900&q=85' },
@@ -23,10 +22,6 @@ const services = [
   { icon: Building2, title: 'Sell your property', text: 'Discuss pricing, buyer enquiries and a clear selling process.', action: 'Sell' },
   { icon: Store, title: 'Commercial property', text: 'Find or lease shops, offices and other business spaces.', action: 'Commercial' },
 ];
-
-function whatsappUrl(message) {
-  return `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`;
-}
 
 function App() {
   const [transaction, setTransaction] = useState('Rent');

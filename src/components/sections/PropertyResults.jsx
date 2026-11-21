@@ -1,4 +1,5 @@
 import { ArrowRight, BedDouble, MapPin, Ruler } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import './PropertyResults.css';
 
 const currency = new Intl.NumberFormat('en-IN', {
@@ -55,6 +56,7 @@ function PropertyResults({ state, properties, onEnquire }) {
                 <button className="property-result-cta" type="button" onClick={() => onEnquire(property)}>
                   Ask about this property <ArrowRight size={15} />
                 </button>
+                <Link className="property-result-details" to={`/properties/${property.id}`}>View full details</Link>
               </div>
             </article>
           ))}
