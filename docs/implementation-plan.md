@@ -1,40 +1,49 @@
-# Prem Housing implementation plan
+# Prem Housing / Prem Realty implementation plan
 
-## Verified baseline
+This is the consolidated roadmap. Task-level checkboxes and verified progress live in [`docs/implementation/MASTER_WORKLIST.md`](implementation/MASTER_WORKLIST.md). Repository findings live in [`docs/01_EXISTING_REPOSITORY_AUDIT.md`](01_EXISTING_REPOSITORY_AUDIT.md).
 
-- The repository is a React 19 and Vite single-page site focused on Mira-Bhayandar.
-- The public page contains search controls, service and locality sections, and a WhatsApp enquiry form.
-- There is no backend client, API, database, admin experience, live inventory, or AI service configured.
-- The old sample inventory module contains unverified listing claims and placeholder media; the public landing page currently avoids presenting these as live listings.
-- The repo had no local commits or remote configured when inspected. It is now attached to `https://github.com/kara-india/PremHousing.git`, tracking the existing `master` history.
-- The working branch is `feature/data-foundation` so the work can be reviewed before merging.
+## Current baseline
 
-## Delivery sequence
+- Active branch: `feature/data-foundation`, tracking `origin/feature/data-foundation`.
+- Runtime: React 19 + Vite 8. `src/main.jsx` routes `/` to the public site, `/properties/:propertyId` to a published-property detail page, and `/admin` to the staff dashboard.
+- Supabase has RLS-enabled `localities`, `properties`, and `leads` tables. The project contains no inventory yet.
+- Public search queries published listings and filters by transaction, property type/BHK, locality, price, deposit, area, and furnishing. Property details use a published-only query.
+- Admin code supports password sign-in, locality creation, property drafts/editing, verification-gated publishing, and admin-only deletion. It has not been verified with a provisioned staff account.
+- Enquiries still open a WhatsApp draft. No public database lead writes, CRM screen, map/POI layer, broker workflow, AI assistant, ad tracking, or deployed production flow exists.
+- Production build passes. Lint remains red on the existing issues in `Navbar.jsx` and `CinematicHero.jsx`.
 
-1. **Data and backend foundation (complete).** Add versioned Postgres/PostGIS tables for localities, properties, and consented leads. Enable RLS everywhere, expose only published inventory to the public, and reserve lead writes for a trusted server-side integration. Do not seed unverified listings.
-2. **Search UI (in progress).** Connect the search form to published records with transaction, residential/commercial type, locality, price, deposit, BHK, furnishing, and area filters. Show an accessible results list and a published-only property detail route. Add representative owner-authorized inventory and verify the full flow.
-3. **Location intelligence.** Add verified coordinates and locality matching, map display, and cached POI distance data only after an allowed geocoding/data source is selected.
-4. **Recommendations and consultant.** Implement explainable structured matching first. Add an AI chat endpoint only after a server-side model key and an inventory-backed search tool are configured; replies must be grounded in returned records.
-5. **Admin and leads (in progress).** Supabase Auth staff access and property CRUD are implemented. Next add lead status handling, consent capture, and a server-side lead submission path. Never expose service credentials in Vite client variables.
-6. **SEO and analytics.** Add property metadata, sitemap generation for published listings, and analytics/pixel events behind cookie consent once business IDs and privacy text are supplied.
-7. **Hardening and deployment.** Add integration/e2e coverage, accessibility/performance checks, CI, and a staging deployment after the Supabase project, approved inventory source, and deployment target are available.
+## Combined phase map
 
-## Decisions and dependencies
+| Consolidated phase | Work | Current state |
+|---|---|---|
+| **0. Audit and decisions** | PremHousing and Estazo audits, data-source/legal review, scope and architecture | PremHousing audit and Estazo license review are complete; source/cost/legal research and brand/scope decisions remain. |
+| **1. Data and staff foundation** | Supabase schema/RLS, staff identity and roles, property admin, moderation base | Core three-table schema and basic admin CRUD are implemented. Expanded broker, moderation, audit, and staff-account verification are pending. |
+| **2. Public property discovery** | Published inventory, filters, results, detail routes, map | Search and detail code are implemented; data-driven end-to-end verification and map are pending. |
+| **3. Locality intelligence** | Verified POIs, geospatial query, transparent location scores | Not started. |
+| **4. Recommendations and AI** | Rule-based ranking, grounded chat, multilingual support | Not started; requires real inventory and an approved model/budget. |
+| **5. Broker network** | Broker onboarding, verification, broker-owned submissions, moderation, promotional profile | New scope; not started. Confirm MVP priority and terms before schema expansion. |
+| **6. Leads and CRM** | Explicit consent, server-side capture, assignment, follow-up, WhatsApp/notification | WhatsApp draft only; CRM persistence and lead dashboard are pending. |
+| **7. Marketing and SEO** | Analytics/ads, attribution, structured metadata, crawlable property pages | Static SEO files exist; event tracking, dynamic metadata, and campaign attribution are pending. |
+| **8. Forecast research** | Data sufficiency audit, baseline model if justified | Optional and deferred until reliable historical transaction data exists. |
+| **9. Hardening and launch** | Tests, RLS/security review, CI, staging, rollback, production | Build works; lint has known failures; no end-to-end suite or production deployment is verified. |
 
-- Initial geography stays Mira Road and Bhayandar, as specified. Exact boundaries/locality list can be refined using owner-approved inventory.
-- There is no approved listing feed or dataset in the repository. The schema records provenance and verification dates; only authorized, verified records should be published.
-- The owner applied the migration SQL in the active `PremHousing` Supabase project. The three tables exist with RLS enabled and currently contain no records. The local Supabase CLI project is not linked to the hosted project.
-- The Vite client is configured with local `VITE_SUPABASE_URL` and `VITE_SUPABASE_PUBLISHABLE_KEY` values. Keep them in the ignored `.env.local`; the publishable key is intended for browser use, while secret/service-role keys must remain server-side.
-- Property search results now link to a published-only detail route with verified fields and a WhatsApp enquiry draft prefilled with the listing title. No database records are currently available to exercise this view end to end.
-- `/admin` now supports password sign-in for staff with trusted `app_metadata.role`, locality creation, property drafts, verification-gated publishing, editing, and admin-only deletion. No account provisioning or privilege escalation is exposed in the client.
-- The first admin role must be assigned to an invited Auth user through the Supabase SQL Editor; the app has no signup or role-management UI. Admin CRUD still needs a real authorized staff account for end-to-end verification.
-- Public lead insertion is deliberately not enabled yet. A server-side endpoint must validate consent and protect the database from spam before lead capture is connected.
-- Map provider, AI model, paid data-source budget, WhatsApp Business API, analytics IDs, ad pixels, and production domain remain integration decisions requiring business credentials or an approved vendor.
-- Keep guest search and enquiry flow; user accounts are only for staff administration.
+The earlier brief’s phases map into this sequence: data/admin → phases 1 and 6; search → phase 2; geospatial → phase 3; AI → phase 4; ads/SEO → phase 7; QA/deployment → phase 9. The updated brief adds the broker network, listing moderation, detailed consent/attribution, and optional forecast research.
 
-## Current acceptance criteria
+## Delivery rules
 
-- Schema supports residential/commercial properties, buy/rent/lease, prices and deposits, BHK, area, furnishing, locality, geospatial coordinates, source provenance, and publication state.
-- Public API roles can read published property/locality data only.
-- Lead PII is inaccessible to public roles and visible only to trusted staff claims.
-- No synthetic inventory or secrets are introduced.
+- Work one task window at a time, with a ten-minute maximum. After completing and verifying a task, stop, update the worklist, report what changed, and wait for the user’s review before taking the next task.
+- Use parallel agents only for independent audits/reviews or isolated deliverables. Share findings before integrating; agents do not change the default branch.
+- Keep the existing React/Vite and Supabase foundation unless a documented requirement justifies a migration.
+- Do not create sample property claims, scrape portals without authorization, or copy Estazo code/assets without a license or written permission.
+- Never put service-role/API secrets in Vite client variables. Keep lead writes server-side and gated on explicit consent.
+- Treat unverified legal, pricing, API-policy, and data-localization claims in the pasted strategy as research tasks. Verify them with primary sources before relying on them.
+- Commit reviewable work on feature branches. Do not merge to `master` or deploy without a separate review checkpoint.
+
+## Human inputs still needed
+
+- Public brand: keep “Prem Housing,” rebrand to “Prem Realty,” or use both with distinct meanings.
+- Product differentiation: which promise should lead—verified listings and price transparency, local human guidance, locality intelligence, or a broker network?
+- Broker network: launch in the first MVP or defer until the public search funnel and inventory are proven? If included, who verifies brokers and what are the Golden Profile promotion terms?
+- Initial authorized inventory, localities, and source permissions.
+- Auth providers/SMS budget; AI model/language/cost budget; WhatsApp Business choice; analytics and ad account IDs.
+- Review the connected Supabase project region (`ap-southeast-2`) before storing customer lead data.
