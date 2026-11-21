@@ -260,7 +260,7 @@ function AdminDashboard() {
   return (
     <main className="admin-shell">
       <header className="admin-header">
-        <Link className="admin-brand" to="/">PREM HOUSING<span>.</span></Link>
+        <Link className="admin-brand" to="/">PREM<span>.</span></Link>
         <Link className="admin-back" to="/"><ArrowLeft size={15} /> Back to site</Link>
       </header>
 
@@ -270,7 +270,7 @@ function AdminDashboard() {
         <section className="admin-login">
           <span className="eyebrow">STAFF ACCESS</span>
           <h1>Sign in to manage listings</h1>
-          <p>Property publishing is restricted to authorized Prem Housing staff.</p>
+          <p>Property publishing is restricted to authorized PREM staff.</p>
           <form onSubmit={handleSignIn}>
             <label>Email<input type="email" autoComplete="username" required value={email} onChange={(event) => setEmail(event.target.value)} /></label>
             <label>Password<input type="password" autoComplete="current-password" required value={password} onChange={(event) => setPassword(event.target.value)} /></label>

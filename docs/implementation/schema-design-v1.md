@@ -1,6 +1,6 @@
-# Prem Housing database design — v1 proposal
+# PREM database design — initial v1 proposal
 
-Status: **design proposal, not yet applied to Supabase**. This expands the existing locality/property/lead foundation without making a production schema change. Product and role assumptions below must be reviewed before an executable migration is applied.
+Status: **superseded by the BidMetric Supabase inventory**. This proposal was written before the owner selected the existing BidMetric project. Use it as a requirements checklist only; do not apply it directly or create duplicate tables. Reconcile with [`bidmetric-supabase-audit.md`](bidmetric-supabase-audit.md) before preparing migrations.
 
 ## Principles
 
@@ -70,7 +70,7 @@ Every exposed table must have RLS enabled and only the minimum SQL grants. Polic
 5. Run migration replay, RLS allow/deny tests, Supabase security advisors, and verify that the current public search still sees only published rows.
 6. Only after review and successful isolated verification, schedule the migration for the active project.
 
-## Current 0.5 environment check (2026-11-22)
+## Initial 0.5 environment check (2026-11-22)
 
 The repository has `supabase/config.toml` (Postgres 17) and the existing core migration. This workstation has `npx`, but no Supabase CLI, Docker, PostgreSQL client/server, or Podman. `npx supabase@latest --version` resolves CLI 3.2.0, but there is no local container runtime to run an isolated Supabase database. The active project will not be used as a substitute. A local run requires Docker Desktop plus the CLI; a hosted branch requires the owner to choose an organization and approve any quoted cost.
 

@@ -106,13 +106,13 @@ function App() {
   function submitLead(event) {
     event.preventDefault();
     const message = [
-      'Hello Prem Housing, I would like to discuss a property requirement.',
+      'Hello PREM, I would like to discuss a property requirement.',
       `Name: ${lead.name}`,
       `Phone: ${lead.phone}`,
       `Requirement: ${lead.requirement}`,
       lead.details ? `Details: ${lead.details}` : '',
     ].filter(Boolean).join('\n');
-    setNotice('Opening WhatsApp with your enquiry. Please press Send in WhatsApp to share it with Prem Housing.');
+    setNotice('Opening WhatsApp with your enquiry. Please press Send in WhatsApp to share it with PREM.');
     window.open(whatsappUrl(message), '_blank', 'noopener,noreferrer');
   }
 
@@ -136,9 +136,9 @@ function App() {
 
       <header className="header">
         <div className="wrap nav-inner">
-          <a className="brand" href="#home" aria-label="Prem Housing home">
-            <span className="brand-mark">PH<span>.</span></span>
-            <span className="brand-copy"><strong>PREM HOUSING</strong><small>LOCAL KNOWLEDGE. PERSONAL SERVICE.</small></span>
+          <a className="brand" href="#home" aria-label="PREM home">
+            <span className="brand-mark">P<span>.</span></span>
+            <span className="brand-copy"><strong>PREM</strong><small>PROPERTY & REAL ESTATE MARKET</small></span>
           </a>
           <button className="mobile-toggle" onClick={() => setMobileMenuOpen(!mobileMenuOpen)} aria-label={mobileMenuOpen ? 'Close menu' : 'Open menu'}>
             {mobileMenuOpen ? <X size={22} /> : <Menu size={22} />}
@@ -160,7 +160,7 @@ function App() {
           <div className="wrap hero-content">
             <div className="eyebrow light"><span className="eyebrow-line" /> YOUR MIRA-BHAYANDAR PROPERTY PARTNER</div>
             <h1>Find the place<br />you’ll <em>call home.</em></h1>
-            <p className="hero-lede">For over 20 years, Prem Housing has helped people navigate property decisions across Mira Road and Bhayandar — with local insight and personal attention.</p>
+            <p className="hero-lede">Built on over 20 years of local experience, PREM helps people navigate property decisions across Mira Road and Bhayandar — with clear market insight and personal attention.</p>
             <div className="hero-actions">
               <a className="button button-gold" href="#search">Explore your options <ArrowDownRight size={17} /></a>
               <a className="hero-call" href="tel:+919833325547"><span className="call-icon"><Phone size={17} /></span><span><small>Speak with our team</small><strong>+91 98333 25547</strong></span></a>
@@ -240,7 +240,7 @@ function App() {
           <div className="wrap inventory-inner">
             <div className="inventory-copy"><span className="eyebrow light">QUALITY OVER QUANTITY</span><h2>Good property advice<br />starts with <em>the facts.</em></h2><p>We are building a carefully maintained catalogue of available homes, resale properties and commercial spaces. Every listing should be checked with its owner or authorized agent before a viewing is arranged.</p><a href="#contact" className="button button-gold">Request current options <ArrowRight size={16} /></a></div>
             <div className="inventory-panel">
-              <div className="inventory-icon"><ShieldCheck size={28} /></div><span className="inventory-label">PREM HOUSING LISTING STANDARD</span><h3>Availability comes first.</h3>
+              <div className="inventory-icon"><ShieldCheck size={28} /></div><span className="inventory-label">THE PREM LISTING STANDARD</span><h3>Availability comes first.</h3>
               <ul><li><Check size={16} /> Confirmed with owner or authorized agent</li><li><Check size={16} /> Clear price and property details</li><li><Check size={16} /> Viewing coordinated by a real person</li></ul>
               <div className="inventory-status"><span className="status-dot" /> Current inventory is confirmed on request</div>
             </div>
@@ -260,13 +260,13 @@ function App() {
         </section>
 
         <section className="about-section" id="about">
-          <div className="about-photo"><img src="/assets/office.png" alt="Prem Housing property consultation" loading="lazy" /><span className="photo-caption">PERSONAL SERVICE, BUILT OVER TIME</span></div>
-          <div className="about-copy"><span className="eyebrow">THE PREM HOUSING APPROACH</span><h2>More than a listing.<br /><em>A relationship.</em></h2><p>Real estate is personal. A home, a rental, a shop or a sale represents a major decision. Prem Housing brings more than two decades of local business experience and a relationship-driven approach to every conversation.</p><p>We work to understand your budget, timing and priorities before suggesting the next step. If a property is not the right fit, we would rather be clear about it.</p><div className="about-proof"><div><strong>20+</strong><span>years of local experience</span></div><div><strong>01</strong><span>personal point of contact</span></div><div><strong>MB</strong><span>Mira-Bhayandar focus</span></div></div><a className="text-link" href="#contact">Get to know our team <ArrowRight size={16} /></a></div>
+          <div className="about-photo"><img src="/assets/office.png" alt="PREM property consultation" loading="lazy" /><span className="photo-caption">PERSONAL SERVICE, BUILT OVER TIME</span></div>
+          <div className="about-copy"><span className="eyebrow">THE PREM APPROACH</span><h2>More than a listing.<br /><em>A relationship.</em></h2><p>Real estate is personal. A home, a rental, a shop or a sale represents a major decision. PREM brings more than two decades of local business experience together with property discovery and market intelligence.</p><p>We work to understand your budget, timing and priorities before suggesting the next step. If a property is not the right fit, we would rather be clear about it.</p><div className="about-proof"><div><strong>20+</strong><span>years of local experience</span></div><div><strong>01</strong><span>personal point of contact</span></div><div><strong>MB</strong><span>Mira-Bhayandar focus</span></div></div><a className="text-link" href="#contact">Get to know our team <ArrowRight size={16} /></a></div>
         </section>
 
         <section className="contact-section section" id="contact">
           <div className="wrap contact-layout">
-            <div className="contact-copy"><span className="eyebrow light">LET’S TALK PROPERTY</span><h2>Your next move<br />starts <em>here.</em></h2><p>Share a few details about what you need. Your enquiry will open in WhatsApp so you can review it and send it directly to Prem Housing.</p><a className="contact-phone" href="tel:+919833325547"><Phone size={18} /><span><small>Call our team</small><strong>+91 98333 25547</strong></span></a><div className="contact-location"><MapPin size={18} /><span>Mira Road & Bhayandar<br />Maharashtra, India</span></div></div>
+            <div className="contact-copy"><span className="eyebrow light">LET’S TALK PROPERTY</span><h2>Your next move<br />starts <em>here.</em></h2><p>Share a few details about what you need. Your enquiry will open in WhatsApp so you can review it and send it directly to PREM.</p><a className="contact-phone" href="tel:+919833325547"><Phone size={18} /><span><small>Call our team</small><strong>+91 98333 25547</strong></span></a><div className="contact-location"><MapPin size={18} /><span>Mira Road & Bhayandar<br />Maharashtra, India</span></div></div>
             <form className="lead-form" onSubmit={submitLead}>
               <div className="form-top"><span>PROPERTY ENQUIRY</span><MessageCircle size={19} /></div>
               <h3>Tell us what you need.</h3><p>We’ll use these details to start your conversation.</p>
@@ -276,16 +276,16 @@ function App() {
               <label>Additional details<textarea value={lead.details} onChange={(e) => setLead({ ...lead, details: e.target.value })} placeholder="Locality, budget, BHK, move-in date or anything else that matters" rows={3} /></label>
               <button className="button button-gold form-submit" type="submit">Continue to WhatsApp <ArrowRight size={17} /></button>
               {notice && <p className="form-notice" role="status">{notice}</p>}
-              <small className="privacy-note">By continuing, you choose to share these details with Prem Housing to respond to your enquiry.</small>
+              <small className="privacy-note">By continuing, you choose to share these details with PREM to respond to your enquiry.</small>
             </form>
           </div>
         </section>
 
-        <section className="closing-strip"><div className="wrap closing-inner"><span>PREM HOUSING</span><p>Local knowledge for your next property decision.</p><a href="#home">Back to top ↑</a></div></section>
+        <section className="closing-strip"><div className="wrap closing-inner"><span>PREM</span><p>Property discovery and market intelligence for your next move.</p><a href="#home">Back to top ↑</a></div></section>
       </main>
 
-      <footer className="footer"><div className="wrap footer-main"><a className="brand footer-brand" href="#home"><span className="brand-mark">PH<span>.</span></span><span className="brand-copy"><strong>PREM HOUSING</strong><small>MIRA-BHAYANDAR, MAHARASHTRA</small></span></a><p>Residential and commercial property guidance for buying, selling, renting and leasing.</p><div className="footer-links"><a href="#services">Services</a><a href="#areas">Areas</a><a href="#about">About</a><a href="#contact">Contact</a><a href="/privacy.html">Privacy</a><a href="/admin">Staff sign-in</a></div></div><div className="wrap footer-bottom"><span>© {new Date().getFullYear()} Prem Housing. All rights reserved.</span><span>Property availability and details are subject to confirmation.</span></div></footer>
-      <a className="floating-whatsapp" href={whatsappUrl('Hello Prem Housing, I would like to discuss a property requirement.')} target="_blank" rel="noreferrer" aria-label="Message Prem Housing on WhatsApp"><MessageCircle size={21} /><span>WhatsApp us</span></a>
+      <footer className="footer"><div className="wrap footer-main"><a className="brand footer-brand" href="#home"><span className="brand-mark">P<span>.</span></span><span className="brand-copy"><strong>PREM</strong><small>PROPERTY & REAL ESTATE MARKET</small></span></a><p>Residential and commercial property guidance, local market insight and future-facing predictions.</p><div className="footer-links"><a href="#services">Services</a><a href="#areas">Areas</a><a href="#about">About</a><a href="#contact">Contact</a><a href="/privacy.html">Privacy</a><a href="/admin">Staff sign-in</a></div></div><div className="wrap footer-bottom"><span>© {new Date().getFullYear()} PREM. All rights reserved.</span><span>Property availability and details are subject to confirmation.</span></div></footer>
+      <a className="floating-whatsapp" href={whatsappUrl('Hello PREM, I would like to discuss a property requirement.')} target="_blank" rel="noreferrer" aria-label="Message PREM on WhatsApp"><MessageCircle size={21} /><span>WhatsApp us</span></a>
     </div>
   );
 }

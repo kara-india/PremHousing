@@ -56,8 +56,8 @@ function PropertyDetailPage() {
   }, [propertyId]);
 
   useEffect(() => {
-    document.title = property ? `${property.title} | Prem Housing` : 'Property details | Prem Housing';
-    return () => { document.title = 'Prem Housing | Buy, Sell & Rent Property in Mira-Bhayandar'; };
+    document.title = property ? `${property.title} | PREM` : 'Property details | PREM';
+    return () => { document.title = 'PREM | Property & Real Estate Market in Mira-Bhayandar'; };
   }, [property]);
 
   if (state !== 'ready') {
@@ -70,7 +70,7 @@ function PropertyDetailPage() {
     return (
       <main className="property-detail-shell">
         <header className="property-detail-header">
-          <Link className="property-detail-brand" to="/">PREM HOUSING<span>.</span></Link>
+          <Link className="property-detail-brand" to="/">PREM<span>.</span></Link>
           <Link className="property-detail-back" to="/#properties"><ArrowLeft size={15} /> Back to search</Link>
         </header>
         <section className="property-detail-state" aria-live="polite" aria-busy={state === 'loading'}>
@@ -83,12 +83,12 @@ function PropertyDetailPage() {
     );
   }
 
-  const enquiryMessage = `Hello Prem Housing, I’m interested in ${property.title} in ${property.locality?.name ?? 'Mira-Bhayandar'}. Please confirm current availability and share more details.`;
+  const enquiryMessage = `Hello PREM, I’m interested in ${property.title} in ${property.locality?.name ?? 'Mira-Bhayandar'}. Please confirm current availability and share more details.`;
 
   return (
     <main className="property-detail-shell">
       <header className="property-detail-header">
-        <Link className="property-detail-brand" to="/">PREM HOUSING<span>.</span></Link>
+        <Link className="property-detail-brand" to="/">PREM<span>.</span></Link>
         <Link className="property-detail-back" to="/#properties"><ArrowLeft size={15} /> Back to search</Link>
       </header>
 

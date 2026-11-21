@@ -1,5 +1,7 @@
 # Existing repository audit
 
+This records the original PremHousing app and its original Supabase baseline. The owner later selected BidMetric Supabase for PREM; use [`docs/implementation/bidmetric-supabase-audit.md`](implementation/bidmetric-supabase-audit.md) as the current backend reference.
+
 ## Scope and snapshot
 
 - PremHousing repository: `kara-india/PremHousing`, branch `feature/data-foundation`, audited at commit `6d6ea5d`.

@@ -1,4 +1,4 @@
-# Prem Housing / Prem Realty master worklist
+# PREM — Property & Real Estate Market: master worklist
 
 ## Execution cadence
 
@@ -10,23 +10,24 @@
 ## Phase 0 — audit and preparation
 
 - [x] **0.1 PremHousing audit:** identify runtime routes, live vs. unused components, stack, current flows, and issues. See `docs/01_EXISTING_REPOSITORY_AUDIT.md`.
-- [x] **0.1b Estazo audit:** check repository, architecture, licensing, and reuse boundaries. No license is detected; no code/assets are cleared for reuse.
+- [x] **0.1b Estazo audit:** check `kara-india/estazo`, architecture, licensing, and reuse boundaries. No license is detected; use as a concept reference only; no code/assets are cleared for reuse.
 - [ ] **0.2 Placeholder cleanup:** remove/replace unused static demo listings, placeholder video/map code, and dead components after final dependency review. Never seed demo properties.
-- [x] **0.3 Supabase inspection:** confirm active PremHousing project, existing tables, RLS, and current empty inventory.
-- [x] **0.4a Expanded schema design:** proposed the complete entity map, trust boundaries, state rules, and RLS matrix in [`schema-design-v1.md`](schema-design-v1.md). This is a reviewable design, not an applied schema migration.
-- [ ] **0.4b Versioned implementation migration:** generate and test additive SQL for approved tables/policies; do not expand the active project until scope decisions and isolated verification are complete.
-- [ ] **0.5 Isolated database verification:** not yet run. Local Supabase CLI resolves through `npx`, but Docker/Postgres runtimes are absent. Use local Supabase after Docker setup or an owner-approved development branch; never use the active project as the test database.
+- [x] **0.3 BidMetric Supabase inspection:** owner selected BidMetric as PREM backend. Read-only inventory and Security Advisor findings are in [`bidmetric-supabase-audit.md`](bidmetric-supabase-audit.md); this is an active existing project, not a blank test database.
+- [ ] **0.4 Schema reconciliation:** map PREM's locality/property/lead needs to existing BidMetric `properties`, `agents`, `buyer_requests`, and `market_trends`; do not apply the earlier greenfield proposal unchanged. Use [`schema-design-v1.md`](schema-design-v1.md) as requirements input only.
+- [ ] **0.4b Versioned migration:** add only missing PREM entities/columns after schema mapping and access decisions; avoid collisions with BidMetric migrations through v018.
+- [ ] **0.5 Isolated database verification:** not run. BidMetric is the selected live project, not a disposable test database. Local Supabase CLI resolves through `npx`, but Docker/Postgres runtimes are absent. Use a local stack after Docker setup or an owner-approved development branch; do not test schema changes directly on BidMetric.
+- [ ] **0.5b BidMetric security review:** Security Advisor reports 12 public tables without RLS, broad anon/authenticated `SELECT` grants, and exposed definer functions. Review consumers and prepare a tested least-privilege migration before public PREM access; avoid a blanket live change.
 - [x] **0.6 Core migration delivery:** version and push the locality/property/lead foundation migration on the feature branch. Expanded schema migrations remain pending.
 - [ ] **0.7 Data-source research:** compare authorized manual inventory, official MahaRERA verification, licensed feeds, and map/POI sources. Verify current terms, usage policies, cost, provenance, and attribution from primary sources.
 - [ ] **0.8 Technology/cost research:** compare MVP/balanced/scale costs in INR with dated official prices and explicit usage assumptions.
 
 ## Phase 1 — authentication, roles, and staff foundation
 
-- [ ] **1.1 Auth provider setup:** decide and configure email/password, Phone OTP, and/or Google OAuth. Phone/SMS and Google provider credentials are not configured.
+- [ ] **1.1 Auth provider setup:** reconcile BidMetric `profiles.role`, agents, and Supabase Auth identities before choosing/updating email/password, Phone OTP, and/or Google OAuth. Phone/SMS and Google provider credentials are not configured.
 - [ ] **1.2 Login UI:** email/password staff login exists; implement/verify any selected OTP or OAuth flows and provide recovery UX.
-- [ ] **1.3 Role provisioning:** admin claim instructions use trusted `app_metadata`; provision a real admin account, then define staff, broker-owner, and broker-agent role assignment safely.
+- [ ] **1.3 Role provisioning:** PREM currently checks trusted `app_metadata.role`; compare with BidMetric's existing profile/agent role model and choose one trusted source before provisioning staff or brokers.
 - [ ] **1.4 Session/role context:** move role/session handling to a shared auth context/hook if the staff/broker/public surfaces require it.
-- [ ] **1.5 RLS policy set:** current locality/property/lead RLS is in place. Add and review multi-tenant broker/customer/audit policies in isolated DB testing.
+- [ ] **1.5 RLS policy set:** map existing BidMetric policies and resolve the 12 RLS-disabled public tables. Add/review multi-tenant broker/customer/audit policies only after isolated testing.
 - [ ] **1.6 Auth/RLS tests:** test anon, staff, admin, broker owner, and broker agent access, including cross-broker isolation.
 
 ## Phase 2 — admin and listing moderation
@@ -100,9 +101,9 @@
 - [ ] **8.6 Sitemap/local SEO:** generated sitemap for published listings and approved organization details.
 - [ ] **8.7 SEO/analytics acceptance:** validate events, metadata, canonical URLs, performance, and accessibility.
 
-## Phase 9 — forecasting research (optional)
+## Phase 9 — future predictions (planned, data-gated)
 
-- [ ] **9.1 Data sufficiency:** verify ownership/licensing, coverage, time span, and quality of historical transactions.
+- [ ] **9.1 Data sufficiency:** inspect BidMetric `market_trends` and valuation-field provenance, ownership/licensing, coverage, time span, and quality of historical transactions.
 - [ ] **9.2 Baseline:** only if data is sufficient, prototype a transparent non-LLM statistical model with uncertainty.
 - [ ] **9.3 UX/claims:** do not make guaranteed-price or investment claims; state uncertainty and show “insufficient data” when appropriate.
 - [ ] **9.4 Review gate:** obtain human approval before exposing forecast outputs publicly.
@@ -119,7 +120,6 @@
 
 ## Human decisions / creative review
 
-- [ ] Confirm brand naming: Prem Housing / Prem Realty / both.
 - [ ] Choose the strongest differentiator: verified and transparent inventory; human local concierge; locality intelligence; or verified broker network.
 - [ ] Decide whether broker onboarding and the Golden Profile promotion belong in the first release or a later stage.
 - [ ] Approve initial localities, listing/data sources, broker vetting criteria, promotion duration/terms, auth methods, AI languages/provider, WhatsApp model, and marketing IDs.
