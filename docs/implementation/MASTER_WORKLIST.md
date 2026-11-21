@@ -13,8 +13,9 @@
 - [x] **0.1b Estazo audit:** check repository, architecture, licensing, and reuse boundaries. No license is detected; no code/assets are cleared for reuse.
 - [ ] **0.2 Placeholder cleanup:** remove/replace unused static demo listings, placeholder video/map code, and dead components after final dependency review. Never seed demo properties.
 - [x] **0.3 Supabase inspection:** confirm active PremHousing project, existing tables, RLS, and current empty inventory.
-- [ ] **0.4 Full expanded schema:** design/version tables for staff/agents, brokers, broker submissions, normalized images/documents, POIs, leads/requirements, conversations, visits, attribution, and audit events. Keep current three-table schema as baseline; do not expand until scope decisions are approved.
-- [ ] **0.5 Isolated database verification:** use a Supabase branch/test project or local Postgres test environment; apply migrations and verify policies before production use. The current schema was applied by the owner to the active project; this is not a test-branch verification.
+- [x] **0.4a Expanded schema design:** proposed the complete entity map, trust boundaries, state rules, and RLS matrix in [`schema-design-v1.md`](schema-design-v1.md). This is a reviewable design, not an applied schema migration.
+- [ ] **0.4b Versioned implementation migration:** generate and test additive SQL for approved tables/policies; do not expand the active project until scope decisions and isolated verification are complete.
+- [ ] **0.5 Isolated database verification:** not yet run. Local Supabase CLI resolves through `npx`, but Docker/Postgres runtimes are absent. Use local Supabase after Docker setup or an owner-approved development branch; never use the active project as the test database.
 - [x] **0.6 Core migration delivery:** version and push the locality/property/lead foundation migration on the feature branch. Expanded schema migrations remain pending.
 - [ ] **0.7 Data-source research:** compare authorized manual inventory, official MahaRERA verification, licensed feeds, and map/POI sources. Verify current terms, usage policies, cost, provenance, and attribution from primary sources.
 - [ ] **0.8 Technology/cost research:** compare MVP/balanced/scale costs in INR with dated official prices and explicit usage assumptions.
