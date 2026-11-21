@@ -13,8 +13,9 @@
 - [x] **0.1b Estazo audit:** check `kara-india/estazo`, architecture, licensing, and reuse boundaries. No license is detected; use as a concept reference only; no code/assets are cleared for reuse.
 - [ ] **0.2 Placeholder cleanup:** remove/replace unused static demo listings, placeholder video/map code, and dead components after final dependency review. Never seed demo properties.
 - [x] **0.3 BidMetric Supabase inspection:** owner selected BidMetric as PREM backend. Read-only inventory and Security Advisor findings are in [`bidmetric-supabase-audit.md`](bidmetric-supabase-audit.md); this is an active existing project, not a blank test database.
-- [ ] **0.4 Schema reconciliation:** map PREM's locality/property/lead needs to existing BidMetric `properties`, `agents`, `buyer_requests`, and `market_trends`; do not apply the earlier greenfield proposal unchanged. Use [`schema-design-v1.md`](schema-design-v1.md) as requirements input only.
-- [ ] **0.4b Versioned migration:** add only missing PREM entities/columns after schema mapping and access decisions; avoid collisions with BidMetric migrations through v018.
+- [x] **0.4a BidMetric schema/role mapping:** compared PREM queries with BidMetric `properties`, `agent_listings`, `agents`, `profiles`, `buyer_requests`, `leads`, and `market_trends`; documented missing fields, state/value mappings, and role/RLS risks in [`bidmetric-supabase-audit.md`](bidmetric-supabase-audit.md). No rows were queried.
+- [ ] **0.4b Schema/RLS migration design:** choose the adapter vs additive PREM tables, protect profile roles and sensitive listing columns, and prepare least-privilege RLS for the affected tables. Do not mutate BidMetric directly.
+- [ ] **0.4c Versioned migration:** add only missing PREM entities/columns after schema mapping and access decisions; avoid collisions with BidMetric migrations through v018.
 - [ ] **0.5 Isolated database verification:** not run. BidMetric is the selected live project, not a disposable test database. Local Supabase CLI resolves through `npx`, but Docker/Postgres runtimes are absent. Use a local stack after Docker setup or an owner-approved development branch; do not test schema changes directly on BidMetric.
 - [ ] **0.5b BidMetric security review:** Security Advisor reports 12 public tables without RLS, broad anon/authenticated `SELECT` grants, and exposed definer functions. Review consumers and prepare a tested least-privilege migration before public PREM access; avoid a blanket live change.
 - [x] **0.6 Core migration delivery:** version and push the locality/property/lead foundation migration on the feature branch. Expanded schema migrations remain pending.
@@ -25,9 +26,9 @@
 
 - [ ] **1.1 Auth provider setup:** reconcile BidMetric `profiles.role`, agents, and Supabase Auth identities before choosing/updating email/password, Phone OTP, and/or Google OAuth. Phone/SMS and Google provider credentials are not configured.
 - [ ] **1.2 Login UI:** email/password staff login exists; implement/verify any selected OTP or OAuth flows and provide recovery UX.
-- [ ] **1.3 Role provisioning:** PREM currently checks trusted `app_metadata.role`; compare with BidMetric's existing profile/agent role model and choose one trusted source before provisioning staff or brokers.
+- [ ] **1.3 Role provisioning:** PREM currently checks trusted `app_metadata.role`; BidMetric's `profiles.role` has buyer/seller/partner values and is self-updatable. Keep privileged roles on a trusted server-managed path; define staff/broker access after the isolated RLS migration is verified.
 - [ ] **1.4 Session/role context:** move role/session handling to a shared auth context/hook if the staff/broker/public surfaces require it.
-- [ ] **1.5 RLS policy set:** map existing BidMetric policies and resolve the 12 RLS-disabled public tables. Add/review multi-tenant broker/customer/audit policies only after isolated testing.
+- [ ] **1.5 RLS policy set:** resolve 12 RLS-disabled public tables, prevent self-assigned profile roles, restrict agent verification fields, and hide private property columns. Add/review broker/customer/audit policies only after isolated testing.
 - [ ] **1.6 Auth/RLS tests:** test anon, staff, admin, broker owner, and broker agent access, including cross-broker isolation.
 
 ## Phase 2 — admin and listing moderation

@@ -15,6 +15,25 @@ BidMetric already has 29 public tables and migration history through version 018
 
 The current PREM/Vite app is **not schema-compatible yet**. It requests a `localities` table, which is absent from the inspected public schema. Its property UI expects a locality relationship and fields such as `property_type`, `bedrooms`, `area_sqft`, `image_urls`, and published status. BidMetric's `properties` table instead has its own shape (`type`, `sqft`, `lat`/`lng`, and valuation fields). Do not run the current UI against this project as if the schemas matched; first map app queries to the intended BidMetric tables or design additive PREM entities that do not collide with them.
 
+### PREM query-to-table mapping
+
+| PREM capability | Candidate BidMetric source | Mismatch / decision needed |
+|---|---|---|
+| Public inventory search/detail | `properties` | Candidate fields include title, price, bedrooms, bathrooms, image URLs, text locality, coordinates, and valuation. PREM expects `localities` join, `locality_id`, `property_type`, `area_sqft`, `deposit`, `furnishing`, `features`, verification timestamp, and `status='published'`. BidMetric uses `type`, `sqft`, text `locality`, no locality FK, and status values `active/sold/pending`; transaction values are `Sale/Rent/Lease`. A read adapter or reviewed additive schema is required. |
+| Agent/broker listings | `agent_listings` joined to `agents` | Separate shape (`agent_id`, title, price, text location, `attrs`, images, status/boost metrics). `agent_listings.agent_id` references `agents.id`; `agents.owner_id` references Auth users. Decide how these listings join into the public inventory. |
+| Leads and visits | `buyer_requests`, `leads`, `site_visits` | Existing entities carry buyer contact, visit preferences, UTM or lead lifecycle fields, but their access rules are not ready for PREM use. PREM currently keeps the enquiry in WhatsApp and has no direct lead insert. |
+| Future predictions | `market_trends` and valuation columns on `properties` | Structurally promising; historical adequacy and provenance are unknown. Keep prediction details private until reviewed. |
+| Locality filters/admin | No `localities` table found | Use `properties.locality` as text only for a first read-only mapping, or add a normalized locality directory after deciding migration strategy. Current locality CRUD cannot run against BidMetric. |
+
+### Auth and authorization mapping
+
+- `public.profiles.id` references `auth.users.id`; `profiles.role` is enum `user_role` with `buyer`, `rera_seller`, and `channel_partner`. There is no `staff` or `admin` value.
+- Current PREM admin checks trusted `auth.users.app_metadata.role` for `staff/admin`. Do not replace that with `profiles.role`: the `profiles` own-row UPDATE policy and column grants permit authenticated users to update `role`, with no protecting trigger found in the metadata inspection.
+- `profiles` also has a public SELECT policy and anon SELECT grants for `phone`, `email`, and `office_address`; do not use this as a public profile API.
+- `agents.owner_id` references `auth.users`, but the agent self-update policy checks `auth.uid() = agents.id` rather than the owner FK. Broad update grants include fields such as verification/status/admin notes; this needs a tested least-privilege policy.
+- The public active-listing policy on `properties` applies to rows, not columns. Current anon SELECT grants include owner/contact, commission, and valuation fields; a public projection/view or column-level restrictions are needed before connecting the public PREM UI.
+- `agent_listings` has a public active-listing read policy and an insert policy using `auth.uid() = agent_id`, although `agent_id` is an FK to `agents.id`; validate the intended ownership relationship before reuse.
+
 Prediction-related data structures exist: `properties` includes valuation/market/comparable prices, confidence interval, bounds, last-updated time, and factor fields; `market_trends` stores location, property type, date, average price per square foot, and transaction count. Their provenance, history depth, quality, coverage, and authorization have not been assessed. These fields are candidates for PREM's future prediction experience, not evidence that reliable predictions can be launched now.
 
 ## Security findings requiring review before public app use
