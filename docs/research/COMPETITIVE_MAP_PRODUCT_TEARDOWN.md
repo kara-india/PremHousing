@@ -3,6 +3,10 @@
 **Research date:** 2026-11-23
 **Scope:** Publicly accessible pages and interactions only. This is product research for PREM's original map-first locality discovery experience. No competitor code, copy, visual assets, or proprietary data are reused.
 
+## Requested repository reference: kairothq/flat-finder
+
+The public [`kairothq/flat-finder` repository](https://github.com/kairothq/flat-finder) and its [README](https://github.com/kairothq/flat-finder#readme) were inspected during the Design Phase. The project describes a map-centric housing-society explorer, transparent match categories, per-value source links, bedroom-size verification tiers, and locality comparisons. Its README also explicitly distinguishes observed listing medians from marked estimates and describes source/quality warnings. These are statements in the project documentation, not independent verification of its live dataset or calculations. PREM adopts the useful interaction principle—show evidence provenance and represent unknown/unverified separately from match/fail—without adopting its source collection methods, data, branding, statistics, colors or implementation.
+
 ## Sources inspected
 
 | Source | What was inspected | Limits |

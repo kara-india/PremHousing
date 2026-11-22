@@ -40,6 +40,22 @@
   - **Research files:** [`COMPETITIVE_MAP_PRODUCT_TEARDOWN.md`](../research/COMPETITIVE_MAP_PRODUCT_TEARDOWN.md), [`GEOSPATIAL_STACK_EVALUATION.md`](../research/GEOSPATIAL_STACK_EVALUATION.md), [`MIRA_BHAYANDAR_DATA_SOURCE_REGISTER.md`](../research/MIRA_BHAYANDAR_DATA_SOURCE_REGISTER.md), [`MAP_EXPLORER_DESIGN_SPEC.md`](../design/MAP_EXPLORER_DESIGN_SPEC.md), [`GEOSPATIAL_DATA_CONTRACTS.md`](../architecture/GEOSPATIAL_DATA_CONTRACTS.md), and [`MAP_EXPLORER_TEST_PLAN.md`](../testing/MAP_EXPLORER_TEST_PLAN.md).
   - **Next-phase gates:** before those records are eligible for map display, owner must decide whether to unpublish them pending rights/provenance verification. Before map implementation, choose map provider/budget, locality boundary source/approximation policy, attribution/language preferences and exact property location privacy. No production map provider, schema or data was changed.
 
+## Design Phase — Homepage Property Explorer + Locality Intelligence Explorer (unnumbered)
+
+**Status:** Complete. This is a UX/design/specification workstream, not application implementation and not a renumbering of Phase 1. All live property/locality rows remain untouched; no Supabase, production configuration, or app code was changed.
+
+- [x] **D.1 Product architecture and user flows:** documented sitemap, navigation, separation of conversion-oriented homepage property discovery from analytical locality intelligence, and five end-to-end flows.
+- [x] **D.2 Homepage Property Explorer:** documented desktop/mobile layouts for map/list sync, budget/BHK filters, cards, selection, loading/empty/error/no-match and existing WhatsApp enquiry.
+- [x] **D.3 Locality Intelligence Explorer:** documented desktop/mobile layout and states for requirements, three preference profiles, evidence layers/legends, locality detail/comparison, recommendations, explanations and insufficient-data behavior.
+- [x] **D.4 Shared design system and responsive/accessibility rules:** defined tokens, reusable component contracts, responsive breakpoints and accessibility conventions.
+- [x] **D.5 Recommendation UX and technical handoff:** specified profile criteria without pretending weights were owner-approved, hard eligibility rules, confidence/limitations, current schema gaps, proposed routes/components/query/data contracts and provenance requirements.
+- [x] **D.6 Visual prototypes:** created a responsive design-only HTML preview for both experiences and key states. It is static and schematic, contains no live property records or fabricated market statistics.
+- [x] **D.7 Design QA and handoff:** reviewed artifacts against the brief, updated docs/worklog, confirmed app and production data were not changed, and handed off without starting implementation. Local browser preview was blocked by browser URL policy; the inspectable HTML preview is included in the repository.
+
+Required artifacts: `docs/design/DESIGN_SYSTEM.md`, `PRODUCT_INFORMATION_ARCHITECTURE.md`, `HOMEPAGE_PROPERTY_EXPLORER.md`, `LOCALITY_INTELLIGENCE_EXPLORER.md`, `RECOMMENDATION_UX_SPEC.md`, `RESPONSIVE_AND_ACCESSIBILITY.md`, `DESIGN_QA_REPORT.md`, `DESIGN_PHASE_SUMMARY.md`, and actual visual preview artifact(s).
+
+---
+
 ## Phase 1 — authentication, roles, and staff foundation
 
 - [x] **1.1a Auth identity/role inventory:** mapped the existing staff login to Supabase email/password and checked the Auth/profile/agent role boundaries. `auth.users.id` is the identity key; `profiles.role` is self-updatable and cannot authorize staff; trusted `app_metadata.role` is the current PREM staff gate. See [`bidmetric-supabase-audit.md`](bidmetric-supabase-audit.md).
