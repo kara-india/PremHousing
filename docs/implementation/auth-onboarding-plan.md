@@ -1,6 +1,12 @@
 # PREM authentication and first-login onboarding
 
-Status: **requirements captured; implementation and provider setup pending.** This document translates the owner's account and access requirements into a safe implementation plan. It is a product/security design, not a claim that Supabase Auth is already configured.
+Status: **requirements captured; frontend implementation partial; database and provider setup pending.** This document translates the owner's account and access requirements into a safe implementation plan. It is not a claim that Supabase Auth providers or the PREM account schema are production-ready.
+
+## Frontend progress (2026-11-23)
+
+The app now has shared sign-in entry points at `/auth`, `/auth/callback`, `/auth/reset-password`, first-login/profile routes at `/onboarding` and `/account`, and a staff link from `/admin` that returns to the staff route after sign-in. Email/password sign-in, signup, reset email, phone OTP request/verification, Google OAuth initiation/callback handling, provider error messaging, and remembered/session-only storage are implemented. Customer/broker onboarding never offers staff; staff still routes through the trusted `app_metadata.role` guard. A missing `prem_accounts` table/policy is reported as setup pending rather than storing account type in editable Auth metadata.
+
+`VITE_ENABLE_GOOGLE_AUTH` and `VITE_ENABLE_PHONE_AUTH` default to `false` in `.env.example`; their controls stay disabled until matching Supabase Auth provider settings, redirects, SMS sender and delivery have been configured. This current frontend does not itself configure providers or create the `prem_accounts` schema. Five focused Node tests cover same-origin redirect handling, safe error copy, and Remember me storage isolation; `npm run lint`, `npm test`, and `npm run build` pass. End-to-end Auth, OAuth, OTP, onboarding RLS and role tests remain pending.
 
 ## Confirmed requirements
 
@@ -54,7 +60,7 @@ Avoid repurposing the legacy `profiles.role` field. Add a PREM-specific account/
 
 Use column-level grants and RLS so a user can read and update only permitted own profile fields; do not permit clients to change account type after first selection, verification, membership, or any trusted role. Broker organization/membership state should be separate and staff-managed. Keep staff roles in the trusted server-managed path. Add no `password`, password hash, OAuth token, or provider secret columns.
 
-Because the existing BidMetric project is active and there is no isolated Supabase branch/runtime available, prepare and review the migration and test plan before applying new onboarding tables or policies to it.
+The app now targets the owner-selected PremHousing project (`swrhmpnjyvnascpqdjir`). Its Phase 0 account/access migration and synthetic RLS suite are applied and verified there. BidMetric is inactive for PREM and must not receive migrations or app writes.
 
 ## Sign-in choices and setup gates
 
@@ -67,7 +73,7 @@ Because the existing BidMetric project is active and there is no isolated Supaba
 ## Implementation and acceptance gates
 
 1. Confirm email challenge mode, Google provider availability, SMS provider/cost, and Remember me behavior.
-2. Prepare the onboarding table/RLS migration and independently review role escalation cases. Verify locally or on an isolated Supabase branch before applying to BidMetric.
+2. Keep the applied PremHousing account/RLS migration under version control; run future database changes on PremHousing or another owner-confirmed isolated target. Never apply PREM changes to BidMetric.
 3. Implement login method selection and first-login account type/profile onboarding; skip and resume must work without duplicating records.
 4. Implement staff assignment and broker organization approval through a trusted path. A public account must not become staff/admin by choosing a role or editing profile fields.
 5. Add database-level acceptance coverage for: customer own-row access; broker organization isolation; staff cross-broker listing read/edit/publish; denial of staff role grants; admin-only deletion; and private customer-data boundaries.

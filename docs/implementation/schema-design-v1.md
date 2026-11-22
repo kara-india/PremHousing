@@ -1,6 +1,24 @@
 # PREM database design — initial v1 proposal
 
-Status: **superseded by the BidMetric Supabase inventory**. This proposal was written before the owner selected the existing BidMetric project. Use it as a requirements checklist only; do not apply it directly or create duplicate tables. Reconcile with [`bidmetric-supabase-audit.md`](bidmetric-supabase-audit.md) before preparing migrations.
+Status: **active design for the owner-selected PremHousing project** (`swrhmpnjyvnascpqdjir`). BidMetric research below is historical only; the app and migrations now target PremHousing. The PREM-native schema was already present there, with empty `properties`, `localities`, and `leads` tables. The prior foundation schema was not tracked in Supabase migration history, so its verified version was reconciled before adding the Phase 0 account/access migration.
+
+## Current PremHousing schema and access
+
+PremHousing's `properties` has PREM enums for property type, transaction type, and listing state; normalized `locality_id`; price/deposit/area; bedrooms/bathrooms/furnishing; descriptive/source/verification fields; integrity constraints; and public search indexes. `localities` is a linked locality directory; `leads` stores consented enquiry records. These match the current app query contract, so no BidMetric adapter is needed.
+
+The Phase 0 migrations [`20261122194006_prem_phase0_access_and_accounts.sql`](../../supabase/migrations/20261122194006_prem_phase0_access_and_accounts.sql) and [`20261122195230_prem_phase0_policy_performance.sql`](../../supabase/migrations/20261122195230_prem_phase0_policy_performance.sql) now:
+
+- exposes localities and published properties to anon/authenticated clients while restricting inventory writes and lead access to trusted staff/admin claims;
+- reserves property deletion to admins and removes client access to direct lead insertion;
+- adds `prem_accounts` with owner-scoped RLS, immutable account type after insert, and server-controlled broker approval (`pending` by default for brokers);
+- consolidates overlapping read policies, evaluates trusted JWT claims once per statement, and indexes the lead-to-property foreign key;
+- stores no passwords, login emails, phone numbers, OAuth tokens, or staff role fields.
+
+The migration is recorded on PremHousing after the existing foundation migration. Synthetic anon/customer/broker/staff/admin tests in [`prem_phase0_rls.sql`](../../supabase/tests/prem_phase0_rls.sql) passed and rolled back all fixtures. The remote baseline ledger repair is auditable in [`reconcile_premhousing_migration_ledger.sql`](../../supabase/ops/reconcile_premhousing_migration_ledger.sql). Google and SMS provider settings remain a Phase 1 Dashboard task.
+
+### Historical BidMetric investigation (inactive)
+
+The earlier BidMetric mapping and security review are preserved in [`bidmetric-supabase-audit.md`](bidmetric-supabase-audit.md) for reference only. Its incompatible property model, broker tables, and hardening migration are not part of PREM's active backend. The BidMetric-specific migration lives under `supabase/archive/bidmetric/` and must not be applied to PremHousing.
 
 ## Principles
 

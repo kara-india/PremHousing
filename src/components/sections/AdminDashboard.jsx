@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { ArrowLeft, LogOut, Pencil, Plus, Save, Trash2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
+import { useAuth } from '../../lib/auth/useAuth.js';
 import './AdminDashboard.css';
 
 const emptyForm = {
@@ -41,11 +42,7 @@ function splitLines(value) {
 }
 
 function AdminDashboard() {
-  const [session, setSession] = useState(null);
-  const [authReady, setAuthReady] = useState(!supabase);
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [signingIn, setSigningIn] = useState(false);
+  const { session, loading: authReady, role, isStaff, signOut } = useAuth();
   const [localities, setLocalities] = useState([]);
   const [newLocalityName, setNewLocalityName] = useState('');
   const [properties, setProperties] = useState([]);
@@ -55,18 +52,6 @@ function AdminDashboard() {
   const [notice, setNotice] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
   const [refreshKey, setRefreshKey] = useState(0);
-
-  useEffect(() => {
-    if (!supabase) return undefined;
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, nextSession) => {
-      setSession(nextSession);
-      setAuthReady(true);
-    });
-    return () => subscription.unsubscribe();
-  }, []);
-
-  const role = session?.user?.app_metadata?.role;
-  const isStaff = role === 'admin' || role === 'staff';
 
   useEffect(() => {
     if (!supabase || !isStaff) return undefined;
@@ -121,25 +106,9 @@ function AdminDashboard() {
     setNotice('Locality added.');
   }
 
-  async function handleSignIn(event) {
-    event.preventDefault();
-    if (!supabase) return;
-    setSigningIn(true);
-    setErrorMessage('');
-    try {
-      const { error } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
-      if (error) setErrorMessage('Sign-in failed. Check your email and password.');
-    } catch {
-      setErrorMessage('Sign-in failed. Check your connection and try again.');
-    } finally {
-      setSigningIn(false);
-    }
-  }
-
   async function handleSignOut() {
-    if (!supabase) return;
     try {
-      const { error } = await supabase.auth.signOut();
+      const { error } = await signOut();
       if (error) setErrorMessage('Could not sign out. Please try again.');
     } catch {
       setErrorMessage('Could not sign out. Check your connection and try again.');
@@ -271,12 +240,7 @@ function AdminDashboard() {
           <span className="eyebrow">STAFF ACCESS</span>
           <h1>Sign in to manage listings</h1>
           <p>Property publishing is restricted to authorized PREM staff.</p>
-          <form onSubmit={handleSignIn}>
-            <label>Email<input type="email" autoComplete="username" required value={email} onChange={(event) => setEmail(event.target.value)} /></label>
-            <label>Password<input type="password" autoComplete="current-password" required value={password} onChange={(event) => setPassword(event.target.value)} /></label>
-            {errorMessage && <p className="admin-error" role="alert">{errorMessage}</p>}
-            <button className="button button-dark" type="submit" disabled={signingIn}>{signingIn ? 'Signing in…' : 'Sign in'}</button>
-          </form>
+          <Link className="button button-dark" to="/auth?next=%2Fadmin">Continue to staff sign-in</Link>
         </section>
       )}
       {supabase && authReady && session && !isStaff && (

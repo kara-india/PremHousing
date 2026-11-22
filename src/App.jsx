@@ -148,6 +148,7 @@ function App() {
             <a href="#services" onClick={() => setMobileMenuOpen(false)}>What we do</a>
             <a href="#areas" onClick={() => setMobileMenuOpen(false)}>Explore areas</a>
             <a href="#about" onClick={() => setMobileMenuOpen(false)}>Our story</a>
+            <a href="/auth" onClick={() => setMobileMenuOpen(false)}>Sign in</a>
             <a className="nav-cta" href="#contact" onClick={() => setMobileMenuOpen(false)}>Talk to our team <ArrowRight size={15} /></a>
           </nav>
         </div>
@@ -284,7 +285,7 @@ function App() {
         <section className="closing-strip"><div className="wrap closing-inner"><span>PREM</span><p>Property discovery and market intelligence for your next move.</p><a href="#home">Back to top ↑</a></div></section>
       </main>
 
-      <footer className="footer"><div className="wrap footer-main"><a className="brand footer-brand" href="#home"><span className="brand-mark">P<span>.</span></span><span className="brand-copy"><strong>PREM</strong><small>PROPERTY & REAL ESTATE MARKET</small></span></a><p>Residential and commercial property guidance, local market insight and future-facing predictions.</p><div className="footer-links"><a href="#services">Services</a><a href="#areas">Areas</a><a href="#about">About</a><a href="#contact">Contact</a><a href="/privacy.html">Privacy</a><a href="/admin">Staff sign-in</a></div></div><div className="wrap footer-bottom"><span>© {new Date().getFullYear()} PREM. All rights reserved.</span><span>Property availability and details are subject to confirmation.</span></div></footer>
+      <footer className="footer"><div className="wrap footer-main"><a className="brand footer-brand" href="#home"><span className="brand-mark">P<span>.</span></span><span className="brand-copy"><strong>PREM</strong><small>PROPERTY & REAL ESTATE MARKET</small></span></a><p>Residential and commercial property guidance, local market insight and future-facing predictions.</p><div className="footer-links"><a href="#services">Services</a><a href="#areas">Areas</a><a href="#about">About</a><a href="#contact">Contact</a><a href="/privacy.html">Privacy</a><a href="/auth">Account sign-in</a><a href="/admin">Staff sign-in</a></div></div><div className="wrap footer-bottom"><span>© {new Date().getFullYear()} PREM. All rights reserved.</span><span>Property availability and details are subject to confirmation.</span></div></footer>
       <a className="floating-whatsapp" href={whatsappUrl('Hello PREM, I would like to discuss a property requirement.')} target="_blank" rel="noreferrer" aria-label="Message PREM on WhatsApp"><MessageCircle size={21} /><span>WhatsApp us</span></a>
     </div>
   );
