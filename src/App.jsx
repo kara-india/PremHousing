@@ -1,12 +1,14 @@
 import { createElement, useMemo, useState } from 'react';
 import {
-  ArrowDownRight, ArrowRight, Building2, Check, ChevronDown, Clock3,
+  ArrowRight, Building2, Check, ChevronDown,
   Home, KeyRound, MapPin, Menu, MessageCircle, Phone, Search, ShieldCheck,
   Store, X
 } from 'lucide-react';
 import './App.css';
+import './components/HeroMedia.css';
 import { supabase } from './lib/supabase';
 import { whatsappUrl } from './lib/whatsapp';
+import HeroMedia from './components/HeroMedia';
 import PropertyResults from './components/sections/PropertyResults';
 
 const areas = [
@@ -156,24 +158,16 @@ function App() {
 
       <main>
         <section className="hero" id="home">
-          <div className="hero-image" role="img" aria-label="Contemporary residential building in Mumbai" />
+          <HeroMedia />
           <div className="hero-shade" />
           <div className="wrap hero-content">
-            <div className="eyebrow light"><span className="eyebrow-line" /> YOUR MIRA-BHAYANDAR PROPERTY PARTNER</div>
-            <h1>Find the place<br />you’ll <em>call home.</em></h1>
-            <p className="hero-lede">Built on over 20 years of local experience, PREM helps people navigate property decisions across Mira Road and Bhayandar — with clear market insight and personal attention.</p>
-            <div className="hero-actions">
-              <a className="button button-gold" href="#search">Explore your options <ArrowDownRight size={17} /></a>
-              <a className="hero-call" href="tel:+919833325547"><span className="call-icon"><Phone size={17} /></span><span><small>Speak with our team</small><strong>+91 98333 25547</strong></span></a>
-            </div>
-            <div className="hero-footnote"><ShieldCheck size={16} /> Local guidance for buying, selling, renting and commercial property</div>
+            <div className="eyebrow light"><span className="eyebrow-line" /> MIRA ROAD · BHAYANDAR · WESTERN SUBURBS</div>
+            <h1>A better view of<br /><em>Mira–Bhayandar.</em></h1>
+            <p className="hero-lede">Find a home with local knowledge and the details you need to choose well.</p>
           </div>
-          <div className="hero-side-label">MIRA-BHAYANDAR · EST. 2001</div>
-        </section>
-
-        <section className="search-section" id="search">
-          <div className="wrap">
-            <div className="search-card">
+          <section className="hero-search-section" id="search">
+            <div className="wrap">
+              <div className="search-card">
               <div className="search-heading">
                 <div><span className="eyebrow">START WITH YOUR PLAN</span><h2>What are you looking for?</h2></div>
                 <span className="search-note"><MapPin size={14} /> Focused on Mira-Bhayandar</span>
@@ -186,9 +180,9 @@ function App() {
                 ))}
               </div>
               <form className="search-form" onSubmit={submitSearch}>
-                <label className="field"><span>Preferred locality</span><span className="select-wrap"><MapPin size={17} /><select value={locality} onChange={(e) => setLocality(e.target.value)}><option>Mira Road</option><option>Mira Road East</option><option>Mira Road West</option><option>Bhayandar East</option><option>Bhayandar West</option><option>Kashimira</option><option>Flexible / nearby</option></select><ChevronDown size={15} /></span></label>
-                <label className="field"><span>Property type</span><span className="select-wrap"><Building2 size={17} /><select value={propertyType} onChange={(e) => setPropertyType(e.target.value)}><option>Any property</option><option>1 BHK</option><option>2 BHK</option><option>3 BHK or larger</option><option>Shop</option><option>Office</option><option>Commercial unit</option></select><ChevronDown size={15} /></span></label>
-                <label className="field"><span>Maximum price (₹)</span><input type="number" min="0" step="1000" value={budget} onChange={(e) => setBudget(e.target.value)} placeholder="e.g. 25000" /></label>
+                <label className="field"><span>Preferred locality / micro-market</span><span className="select-wrap"><MapPin size={17} /><select value={locality} onChange={(e) => setLocality(e.target.value)}><option>Mira Road</option><option>Mira Road East</option><option>Mira Road West</option><option>Bhayandar East</option><option>Kashimira</option><option>Ketkipada</option><option>Mira Bhayandar</option><option>Flexible / nearby</option></select><ChevronDown size={15} /></span></label>
+                <label className="field"><span>BHK / property type</span><span className="select-wrap"><Building2 size={17} /><select value={propertyType} onChange={(e) => setPropertyType(e.target.value)}><option>Any property</option><option>1 BHK</option><option>2 BHK</option><option>3 BHK or larger</option><option>Shop</option><option>Office</option><option>Commercial unit</option></select><ChevronDown size={15} /></span></label>
+                <label className="field"><span>Maximum budget (₹)</span><input type="number" min="0" step="1000" value={budget} onChange={(e) => setBudget(e.target.value)} placeholder={transaction === 'Buy' ? 'e.g. 8500000' : 'e.g. 25000'} /></label>
                 <label className="field"><span>Minimum deposit (₹)</span><input type="number" min="0" step="1000" value={minimumDeposit} onChange={(e) => setMinimumDeposit(e.target.value)} placeholder="Optional" /></label>
                 <button className="button button-dark search-submit" type="submit"><Search size={17} /> Match my requirement</button>
                 <details className="search-advanced">
@@ -200,9 +194,11 @@ function App() {
                   </div>
                 </details>
               </form>
-              <p className="search-disclaimer">We confirm current availability before sharing a property. No unverified listing claims.</p>
+                <p className="search-disclaimer">We confirm current availability before sharing a property. No unverified listing claims.</p>
+              </div>
             </div>
-          </div>
+          </section>
+          <div className="hero-side-label">MIRA-BHAYANDAR · EST. 2001</div>
         </section>
 
         <div className="wrap">
