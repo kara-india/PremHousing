@@ -2,16 +2,20 @@
 
 ## Execution cadence
 
-- Each execution window is capped at ten minutes and handles one task or one bounded subtask.
-- At task completion: verify it, update this checklist, provide a concise summary, and stop for user review. Do not begin the next task until the user replies.
-- Parallel agents may handle independent, read-only audits or isolated workstreams; integrate only after their findings are reviewed.
+- Work continuously through ready tasks in order, using bounded execution windows of about ten minutes for progress and quality checks.
+- Complete and verify each task, update this checklist, and continue to the next pending task without waiting for review.
+- Pause only for a genuine hard blocker: missing required credentials, an external human-only verification/decision, or an irreversible destructive action.
+- Parallel agents may handle independent audits or non-overlapping implementation; review all findings and changes before integration.
 - Status key: `[x]` complete and verified; `[ ]` pending or not verified. A task stays unchecked if only part of its acceptance criteria is done.
 
 ## Phase 0 — audit and preparation
 
 - [x] **0.1 PremHousing audit:** identify runtime routes, live vs. unused components, stack, current flows, and issues. See `docs/01_EXISTING_REPOSITORY_AUDIT.md`.
 - [x] **0.1b Estazo audit:** check `kara-india/estazo`, architecture, licensing, and reuse boundaries. No license is detected; use as a concept reference only; no code/assets are cleared for reuse.
-- [ ] **0.2 Placeholder cleanup:** remove/replace unused static demo listings, placeholder video/map code, and dead components after final dependency review. Never seed demo properties.
+- [x] **0.2 Placeholder/dead-code cleanup:** removed the unrouted hardcoded demo inventory and its legacy property/detail consumers, fake video/map flows, and unused section/layout/modal components after import-graph review. Removed orphan images, Mapbox/GSAP/Framer Motion dependencies, and the example Mapbox token. Active routes/search/admin/detail components and active hero/office assets remain intact. No demo property data was added to Supabase. Clean `npm ci`, `npm run lint`, and `npm run build` pass; route/asset smoke requests returned 200 for active routes/assets. This package has no test or type-check scripts.
+  - **Verified boundaries:** active routes remain `/` → `App.jsx`, `/admin` → `AdminDashboard.jsx`, and `/properties/:propertyId` → Supabase-backed `PropertyDetailPage.jsx`; active area photos remain explicitly illustrative. The old map provider is not selected; the example environment no longer advertises an unused Mapbox token.
+  - **Removed:** `src/constants/listings.js`; unused `FeaturedProperties`, legacy `PropertyDetail`, `CinematicHero`, `Contact`, `Hero`, `Services`, `About`, `Navbar`, `Footer`, and `BookingModal` modules/styles; orphan `src/assets` and `public/assets` files; and orphan-only dependencies. `package.json`/lockfile now match the active import graph.
+  - **Acceptance verified:** no source references remain to removed modules/assets; active `public/assets/hero.png` and `office.png` remain; lint/build clean. Existing package has no test/type-check commands.
 - [x] **0.3 BidMetric Supabase inspection:** owner selected BidMetric as PREM backend. Read-only inventory and Security Advisor findings are in [`bidmetric-supabase-audit.md`](bidmetric-supabase-audit.md); this is an active existing project, not a blank test database.
 - [x] **0.4a BidMetric schema/role mapping:** compared PREM queries with BidMetric `properties`, `agent_listings`, `agents`, `profiles`, `buyer_requests`, `leads`, and `market_trends`; documented missing fields, state/value mappings, and role/RLS risks in [`bidmetric-supabase-audit.md`](bidmetric-supabase-audit.md). No rows were queried.
 - [x] **0.4b Security migration design:** reviewed the 12 RLS-disabled tables and bid RPCs; backend-only financial, identity, visit, and audit tables are closed to client roles, while auction writes are routed through validated RPCs. Remaining `profiles`, `agents`, and `properties` column/role access still needs a separate reviewed migration.
