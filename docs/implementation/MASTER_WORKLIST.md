@@ -1,0 +1,170 @@
+# PREM — Property & Real Estate Market: master worklist
+
+## Execution cadence
+
+- Work continuously through ready tasks in order, using bounded execution windows of about ten minutes for progress and quality checks.
+- Complete and verify each task, update this checklist, then continue until the current phase is complete. At each phase boundary, push the phase changes and provide the owner with any Supabase SQL/dashboard steps needed for the next phase.
+- Pause within a phase only for a genuine hard blocker: missing required credentials, external human-only verification/decision, or an irreversible destructive action. When blocked, provide the exact safe diagnostic or setup step needed from the owner.
+- Parallel agents may handle independent audits or non-overlapping implementation; review all findings and changes before integration.
+- Status key: `[x]` complete and verified; `[ ]` pending or not verified. A task stays unchecked if only part of its acceptance criteria is done.
+
+## Phase 0 — audit and preparation
+
+- [x] **0.1 PremHousing audit:** identify runtime routes, live vs. unused components, stack, current flows, and issues. See `docs/01_EXISTING_REPOSITORY_AUDIT.md`.
+- [x] **0.1b Estazo audit:** check `kara-india/estazo`, architecture, licensing, and reuse boundaries. No license is detected; use as a concept reference only; no code/assets are cleared for reuse.
+- [x] **0.2 Placeholder/dead-code cleanup:** removed the unrouted hardcoded demo inventory and its legacy property/detail consumers, fake video/map flows, and unused section/layout/modal components after import-graph review. Removed orphan images, Mapbox/GSAP/Framer Motion dependencies, and the example Mapbox token. Active routes/search/admin/detail components and active hero/office assets remain intact. No demo property data was added to Supabase. Clean `npm ci`, `npm run lint`, and `npm run build` pass; route/asset smoke requests returned 200 for active routes/assets. This package has no test or type-check scripts.
+  - **Verified boundaries:** active routes remain `/` → `App.jsx`, `/admin` → `AdminDashboard.jsx`, and `/properties/:propertyId` → Supabase-backed `PropertyDetailPage.jsx`; active area photos remain explicitly illustrative. The old map provider is not selected; the example environment no longer advertises an unused Mapbox token.
+  - **Removed:** `src/constants/listings.js`; unused `FeaturedProperties`, legacy `PropertyDetail`, `CinematicHero`, `Contact`, `Hero`, `Services`, `About`, `Navbar`, `Footer`, and `BookingModal` modules/styles; orphan `src/assets` and `public/assets` files; and orphan-only dependencies. `package.json`/lockfile now match the active import graph.
+  - **Acceptance verified:** no source references remain to removed modules/assets; active `public/assets/hero.png` and `office.png` remain; lint/build clean. Existing package has no test/type-check commands.
+- [x] **0.3 Historical BidMetric Supabase inspection:** performed for an earlier backend selection and retained in [`bidmetric-supabase-audit.md`](bidmetric-supabase-audit.md). BidMetric's scoped security hardening occurred before the backend switch; PremHousing is the sole PREM target now.
+- [x] **0.4a Historical BidMetric schema/role mapping:** retained for reference only. Current PREM data uses PremHousing's native schema; no BidMetric adapter or migration is in the active target path.
+- [x] **0.4b Historical BidMetric security research:** retained for reference only. The BidMetric-specific hardening migration was previously applied to BidMetric and is archived outside the active Supabase migration directory; its table/function assumptions do not match PremHousing and it must not be replayed there.
+- [x] **0.4c PREM schema/additions:** PremHousing already had the native `properties`, `localities`, and `leads` schema. Added the owner-scoped account table and least-privilege RLS/grants in [`20261122194006_prem_phase0_access_and_accounts.sql`](../../supabase/migrations/20261122194006_prem_phase0_access_and_accounts.sql). No BidMetric adapter is needed for the selected backend.
+  - **Verified schema (2026-11-23):** PremHousing matches the active UI schema: `properties` has PREM status/type/transaction enums, locality foreign key, pricing/area/furnishing/source/verification fields, required check constraints, and search indexes; `localities` and `leads` match the checked-in foundation. All affected tables were empty before changes. No property adapter is needed for the selected database.
+  - **Security/access choices:** public clients select locality rows and published properties; only staff/admin claims from trusted `app_metadata.role` can manage inventory and read/update leads; admin alone can delete properties. Lead insertion remains server-only. Customer/broker account access is owner-scoped; broker approval starts pending and cannot be changed with client grants. Future broker organization ownership, role provisioning, and expanded private projection stay in Phase 1/6.
+  - **Migration/acceptance record:** [`20261122194006_prem_phase0_access_and_accounts.sql`](../../supabase/migrations/20261122194006_prem_phase0_access_and_accounts.sql) and [`20261122195230_prem_phase0_policy_performance.sql`](../../supabase/migrations/20261122195230_prem_phase0_policy_performance.sql) applied to PremHousing ref `swrhmpnjyvnascpqdjir`; migration ledger also records the verified pre-existing foundation migration. [`prem_phase0_rls.sql`](../../supabase/tests/prem_phase0_rls.sql) passed synthetic anon/customer/broker/staff/admin checks and rolled back all fixture rows. BidMetric is inactive for this app.
+- [x] **0.5 Isolated database verification:** applied both Phase 0 migrations to the explicitly selected PremHousing target and ran [`prem_phase0_rls.sql`](../../supabase/tests/prem_phase0_rls.sql) with synthetic Auth, property, locality, lead, customer, broker, staff, and admin fixtures inside a transaction. Anon/public visibility, customer account isolation, broker pending state/no self-approval, staff listing/lead access, staff delete denial, admin delete allowance, and direct lead-write denial all passed; `ROLLBACK` removed every fixture. Post-test public table counts and synthetic Auth-user count were zero; Supabase Security and Health Advisors returned no findings. The performance advisor has no RLS-initplan, duplicate-policy, or unindexed-FK warnings; six unused-index INFO findings remain because the test database has no production workload.
+  - **Migration-ledger reconciliation:** the original PREM foundation schema existed before migration tracking. After verifying its tables, enums, constraints, indexes, and empty data, recorded `20261120191244_property_inventory_and_leads` as already applied using [`reconcile_premhousing_migration_ledger.sql`](../../supabase/ops/reconcile_premhousing_migration_ledger.sql). Remote migration history now matches the active local migration set.
+- [x] **0.5b Historical BidMetric security review:** retained as historical research; its migration is archived and was not applied to PremHousing.
+- [x] **0.5c BidMetric-to-PremHousing consolidation audit:** compared both live project inventories read-only on 2026-11-23. BidMetric had 29 empty public tables, 12 public functions, 18 migration ledger records, 3 Auth users, and no Storage buckets/objects; after the owner-requested deletion, zero Auth users remain (5 identities and 4 sessions cascaded); PremHousing has 4 empty public tables, 2 public functions, 3 migration ledger records, no Auth users, and no Storage buckets/objects. No source public rows or files are available to import. The two schemas are incompatible and collide on `properties`/`leads`; the source security migration and authorization patterns are BidMetric-specific. No source schema or public data were copied; the owner confirmed the accounts were not needed and requested deletion. A conditional delete removed exactly 3 users, and a post-check confirmed zero users, identities, sessions, and MFA factors. Useful product requirements and forecast/feedback concepts are retained in PREM docs; valuation/forecast schema remains deferred until provenance and data sufficiency are verified. Details and rationale: [`bidmetric-supabase-audit.md`](bidmetric-supabase-audit.md#2026-11-23-consolidation-decision).
+- [x] **0.6 Core migration delivery:** the native locality/property/lead schema is present in PremHousing; its pre-existing baseline is now recorded in the migration ledger, followed by the Phase 0 access/accounts migration.
+- [x] **0.7 Data-source research:** compared permitted owner/broker inventory, MahaRERA, licensed feeds, OSM services, Google Maps Platform India, and Mapbox using primary sources; documented current access/terms, public pricing vs quote-only costs, attribution, caching, provenance, and rights risks in [`data-source-research.md`](data-source-research.md). Recommends consented listing submissions, dated MahaRERA links/checks, and no production provider before scope/terms/quote decisions. No records were scraped or imported.
+- [x] **0.8 Technology/cost research:** prepared reproducible MVP/balanced/scale monthly estimates with dated official prices and assumptions for Supabase, Vercel, email, India maps/geocoding, SMS, and AI; documented INR conversion, free-tier/overage risks, and owner decisions in [`technology-cost-research.md`](technology-cost-research.md). Reviewed scenario arithmetic and corrected model naming against the official OpenAI pricing page. Estimates are budget scenarios, not quotes or committed spend.
+  - Model monthly low/expected/high usage across database/auth/storage/egress, hosting, maps/geocoding/POI, transactional email/SMS, AI chat/forecast inference, monitoring/backups, and one-time setup where relevant.
+  - Use official provider pricing/calculators; state dated exchange-rate source, taxes/region assumptions, volumes, quotas, overages, free-tier exclusions, and sensitivity drivers.
+  - Deliver `docs/implementation/technology-cost-research.md` with scenario table, sources, formulas, cost controls, and decisions requiring later owner input.
+  - Acceptance: totals are reproducible from assumptions, identify provider fees/free-tier risks, and separate MVP from production scale costs.
+
+## Phase 1 — authentication, roles, and staff foundation
+
+- [x] **1.1a Auth identity/role inventory:** mapped the existing staff login to Supabase email/password and checked the Auth/profile/agent role boundaries. `auth.users.id` is the identity key; `profiles.role` is self-updatable and cannot authorize staff; trusted `app_metadata.role` is the current PREM staff gate. See [`bidmetric-supabase-audit.md`](bidmetric-supabase-audit.md).
+- [x] **1.1b Audience/access decision:** owner confirmed email, mobile, or Google/Gmail sign-in for staff, customers, and brokers; staff can view, edit, and publish across broker listings/activity. Keep customer and broker data scoped. Staff role is provisioned by PREM, never self-selected.
+- [x] **1.1c Auth/onboarding requirements:** support email/password, mobile OTP, and Google OAuth; include Remember me; first sign-in asks account type and minimal basics; save an incomplete profile and allow later completion. See [`auth-onboarding-plan.md`](auth-onboarding-plan.md).
+- [ ] **1.1d Provider setup:** verify Auth settings in Supabase Dashboard; configure phone SMS delivery, Google OAuth client/redirects, and approved production URLs. The connected Supabase tools cannot inspect provider toggles; no credentials/settings have been changed.
+- [ ] **1.2 Login and onboarding UI:** implement the three sign-in choices, Remember me/session-only behavior, account linking, first-login customer/broker onboarding, resumable profile completion, and safe routing. Never offer staff as a self-selected role.
+  - **Code audit (2026-11-23):** a single default Supabase client lives at `src/lib/supabase.js`; `src/main.jsx` has only `/`, `/admin`, and `/properties/:propertyId`; email/password sign-in is embedded in `AdminDashboard.jsx`; no shared session context, public signup, recovery, phone OTP, OAuth callback, or onboarding exists.
+  - **Target files:** update `src/lib/supabase.js` with safe persistence configuration; add a shared auth provider/context and auth/onboarding route components; register routes in `src/main.jsx`; move admin login to shared auth flow and preserve its trusted `app_metadata.role` gate; add focused, accessible styles; link to sign-in from relevant navigation without blocking anonymous browse.
+  - **Flows/edge cases:** email/password sign-in and signup with email-confirmation state and recovery; phone OTP request/confirmation; Google OAuth exact redirect and callback/session restoration; visible provider and network errors; duplicate/linked identity guidance; account bootstrap idempotency; customer vs broker only; broker pending approval; skip/resume profile completion; sign-out; persistent vs session-only storage chosen before auth; redirect back to intended public/admin route; no staff self-selection or credential/profile secrets stored in public tables.
+  - **Dependency/acceptance gate:** account table and RLS must exist before onboarding writes are enabled. Provider buttons must reflect configured provider readiness; do not claim production-ready Google/SMS until dashboard credentials, redirects and delivery are verified. Test auth transitions with mocked Supabase and database fixtures, keyboard/screen-reader flow, reload/session persistence, and unauthorized `/admin` denial. Add test harness only if needed for this task, then run lint, typecheck (if introduced), tests, and build.
+  - **Implementation progress:** added `/auth`, `/auth/callback`, `/auth/reset-password`, `/onboarding`, and `/account`; moved the staff login entry point to `/auth?next=/admin`; implemented email/password signup/sign-in/recovery, phone OTP request/confirm, Google OAuth callback handling, safe same-origin return routing, storage-mode selection, customer/broker onboarding and resume UI. The account and RLS migration is applied/tested on PremHousing, and local `.env.local` points to that project. Phone/Google remain disabled pending dashboard provider setup. Seven Node tests, lint, and production build pass. This remains **incomplete** until provider setup and full interactive email/OAuth/SMS flows are verified.
+- [ ] **1.3 Role provisioning:** staff are assigned by a trusted PREM admin/server path; brokers map to organization memberships with approval state; customers map to their own account/data. Do not authorize from `profiles.role` or editable `user_metadata`.
+  - **Current-state research:** PremHousing has no PREM staff table or user rows. The client uses a publishable key and must never receive a service-role key. Staff UI and RLS trust only `app_metadata.role`; no client profile or editable `user_metadata` can grant staff access. BidMetric's role/agent audit is historical only.
+  - **Target:** provision `staff/admin` only through a protected server/Edge Function or Supabase Admin API used by an already-authorized admin; verify caller's trusted claim and audit actor/target/reason. Customer/broker account types come from `prem_accounts`; broker access additionally requires staff-approved organization membership and active state. Never derive privileges from a display name, email domain, `user_metadata`, or client-supplied organization ID.
+  - **Files after migration/contract approval:** namespaced broker organization/membership migration and RLS, a server-side staff provisioning function with environment-only service secret, frontend account state hook, staff approval UI, and tests for first admin/bootstrap safety, revocation, suspended memberships, invitations, duplicate identities, and no self-escalation.
+  - **Blockers/acceptance:** choose initial staff bootstrap owner and recovery path; define broker verification fields/approver; verify service secrets/redirects without committing them; test that customers/brokers cannot assign roles or approval, staff cannot grant staff/admin, and only the trusted admin path can provision/revoke. Do not deploy the privileged function until isolated RLS tests pass.
+- [ ] **1.4 Session/role context:** move role/session handling to a shared auth context/hook if the staff/broker/public surfaces require it.
+  - **Audit finding:** Admin currently owns a Supabase auth subscription and derives staff from `user.app_metadata.role`; auth/onboarding screens separately call `getSession` and subscribe. Multiple independent listeners can drift during OAuth callbacks, token refresh, and sign-out.
+  - **Target files:** add `src/lib/auth/AuthContext.jsx` (or `src/context/AuthContext.jsx`) with one Supabase session subscription, initial loading state, user/session, and trusted role selectors; wrap routes in `src/main.jsx`; migrate `/admin`, `/auth`, `/onboarding`, and `/account` to consume shared state.
+  - **Boundary:** derive `staff/admin` only from `app_metadata.role`; account type/approval may come from owner-scoped `prem_accounts` but never grant staff. Keep public browse independent of auth availability; unsubscribe once on unmount and handle no-config Supabase.
+  - **Acceptance:** one auth listener, stable loading/refresh/sign-out transitions, no stale role when accounts switch, staff guard unchanged, protected admin server/RLS remains mandatory. Test context event behavior and rerun lint/tests/build.
+  - **Implementation progress:** `AuthProvider` now owns the app-wide session subscription; `/admin`, `/auth`, `/onboarding`, and `/account` consume `useAuth`; role derivation accepts only `app_metadata.role`. Unit tests prove client-editable `user_metadata.role` cannot grant staff/admin. `RequireAuth` now wraps `/admin` with a trusted staff/admin check and wraps `/onboarding` and `/account` with a sign-in check; unauthenticated deep links preserve a safe return path, while public browse/detail and the Auth callback remain public. Lint, 7 unit tests, and production build pass. Keep pending for provider-event integration and authenticated route/RLS fixtures.
+- [ ] **1.5 RLS policy set:** prevent self-assigned staff/admin privileges; restrict agent verification fields; hide private property columns; allow authorized staff cross-broker read/edit/publish; scope brokers to their organization/assignments and customers to their own records. Verify on an isolated database before rollout.
+- [ ] **1.6 Auth/RLS tests:** cover anon, customer, staff, admin, broker owner, and broker agent; prove staff cross-broker view/edit/publish works, brokers cannot cross organizations, customers see only their records, and only the trusted admin path can grant staff/admin roles.
+
+## Phase 2 — admin and listing moderation
+
+- [ ] **2.1 Admin guard verification:** `/admin` checks the signed-in user’s trusted role in UI; prove RLS also blocks unauthorized reads/writes with real test accounts.
+- [ ] **2.2 Admin operations:** basic property CRUD exists. Add broker approval, lead/customer views, featured control, and any approved export needs.
+- [ ] **2.3 Listing moderation:** add `pending/approved/rejected` review states and rejection feedback for broker-submitted listings; current status is only `draft/published/archived`.
+- [ ] **2.4 CSV import/export:** optional; implement only after data format and owner workflow are defined.
+- [ ] **2.5 Admin RLS:** verify administrator access across all approved resources and deny regular staff/broker access to unrelated records.
+- [ ] **2.6 CRUD acceptance:** use a provisioned admin and test create, edit, publish, unpublish, reject, and delete flows.
+
+## Phase 3 — public property search and maps
+
+- [ ] **3.1 Dynamic property pages:** public detail route is dynamic and published-only. Replace/archive the unused demo detail component and add image storage only after owner media is supplied.
+- [ ] **3.2 Search query:** published-property search and locality/transaction/type/price/deposit/BHK/area/furnishing filters exist; verify with approved rows.
+- [ ] **3.3 Map view:** choose Mapbox/Google/other provider, configure a restricted token, plot listings, and support marker/list interaction.
+- [ ] **3.4 Transaction-specific values:** confirm sale/rent/lease units and displayed price semantics; schema currently uses `price` plus optional `deposit`.
+- [ ] **3.5 Heavy-deposit handling:** a minimum-deposit filter exists; add transaction-specific UX and acceptance coverage.
+- [ ] **3.6 Contextual filters:** hide or explain inapplicable filters for sale/rent/commercial flows.
+- [ ] **3.7 Search acceptance:** verify representative owner-authorized records, correct result ordering, empty state, map/list behavior, and detail links.
+
+## Phase 4 — locality intelligence
+
+- [ ] **4.1 Approved POI source:** choose permitted data source and categories for stations, transit, hospitals, schools, parks, emergency services, and commercial hubs.
+- [ ] **4.2 POI provenance:** model coordinates, category, source/attribution, confidence, and last-verified time; load only permitted data.
+- [ ] **4.3 Distance/scoring:** implement transparent proximity measures and rule-based security/connectivity/family/business scores; avoid claims based on unsupported safety proxies.
+- [ ] **4.4 Ranking:** combine hard filters with explainable soft preferences and clear trade-offs; never bury valid options solely due to weak soft score.
+- [ ] **4.5 Map POI layers:** accessible map layers/markers and source attribution.
+- [ ] **4.6 Location acceptance:** compare representative distances to known coordinates and test scoring with reviewed examples.
+
+## Phase 5 — AI consultant and recommendations
+
+- [ ] **5.1 Model/budget decision:** select provider, server-side budget, languages, and retention policy.
+- [ ] **5.2 Chat UX:** multi-turn requirement clarification with explicit human handoff.
+- [ ] **5.3 Search tool:** structured, RLS-safe search function with validated fields and bounded result count.
+- [ ] **5.4 Grounded explanations:** cite only returned property/POI fields; report no exact match and trade-offs honestly.
+- [ ] **5.5 Conversation/requirements retention:** define minimal storage, access, deletion, and retention before persistence.
+- [ ] **5.6 Consent handoff:** ask before saving contact details or creating a lead.
+- [ ] **5.7 Multilingual behavior:** validate English, Hindi, Marathi, and Hinglish only if included in scope.
+- [ ] **5.8 AI acceptance:** test at least three reviewed dialogues and measure retrieval constraint accuracy; no fabricated listing details.
+
+## Phase 6 — broker partner portal
+
+- [ ] **6.1 Scope decision:** confirm launch timing, supported localities, broker verification owner, and onboarding eligibility.
+- [ ] **6.2 Broker identity:** model broker organizations, owners, agents, invitations, and status without client-editable privilege claims.
+- [ ] **6.3 Promotional profile:** decide “Golden Profile” duration/terms and disclose it as a promotion, not a trust/RERA endorsement; enforce expiry server-side.
+- [ ] **6.4 Submission workflow:** broker-owned drafts → pending review → approved/rejected; prevent cross-broker access.
+- [ ] **6.5 Broker dashboard:** listings, assigned leads, site visits, and minimal performance data.
+- [ ] **6.6 Notifications/visits:** implement only selected channels and consented workflows.
+- [ ] **6.7 Moderation/duplicate detection:** verify ownership/permission and duplicate checks before public approval.
+- [ ] **6.8 Broker acceptance:** test two broker accounts and prove they cannot read/change each other’s data.
+
+## Phase 7 — leads, CRM, and WhatsApp
+
+- [ ] **7.1 Consent UX:** add explicit opt-in language/checkbox before storing name, phone, or requirements; provide purpose/retention notice.
+- [ ] **7.2 Server-side capture:** add validated, rate-limited Edge Function/API; no public direct insert into `leads`.
+- [ ] **7.3 Assignment and lifecycle:** define staff/broker assignment, status, follow-up, site visit, and audit events.
+- [ ] **7.4 CRM UI:** show only authorized leads; support filtering by property, agent, broker, status, and permitted campaign source.
+- [ ] **7.5 WhatsApp:** choose click-to-chat vs. Cloud API/template messages, verify provider setup/cost, and only send notifications after consent.
+- [ ] **7.6 Attribution:** capture approved UTM fields and deduplicate events/leads.
+- [ ] **7.7 Privacy rights:** define retrieval/update/deletion, retention, and breach response with qualified legal review.
+- [ ] **7.8 Lead acceptance:** verify no lead is stored without consent and no broker can access an unrelated lead.
+
+## Phase 8 — marketing, analytics, and SEO
+
+- [ ] **8.1 Event plan:** approve analytics IDs, event taxonomy, cookie/consent policy, and attribution requirements.
+- [ ] **8.2 GA4/GTM:** implement consent-aware page/search/property/contact events and verify once per action.
+- [ ] **8.3 Meta Pixel/CAPI:** implement only after business IDs and server-side secret storage are configured.
+- [ ] **8.4 Campaign QA:** verify in vendor debug tools; test duplicate handling and lead attribution.
+- [ ] **8.5 SEO metadata:** dynamic title/description, structured data from verified fields, and crawlable property pages.
+- [ ] **8.6 Sitemap/local SEO:** generated sitemap for published listings and approved organization details.
+- [ ] **8.7 SEO/analytics acceptance:** validate events, metadata, canonical URLs, performance, and accessibility.
+
+## Phase 9 — forecasting and verified feedback loop (planned, data-gated)
+
+Detailed design and acceptance criteria: [`forecasting-feedback-plan.md`](forecasting-feedback-plan.md). Forecast work is a separate, paused workstream; it does not authorize collecting restricted data or exposing estimates publicly.
+
+- [ ] **9.1 Scope and target definition (Pause 1):** confirm launch geography and hierarchy, eligible property/transaction types, forecast grain, target (nominal/real price or price per sq ft), currency/area units, horizons (candidate 1/3/5 years), forecast cadence, and decision use. Keep the India → Maharashtra → MMR → city → locality example provisional until approved.
+- [ ] **9.2 Data-source, license, and privacy audit:** prioritize verified registered transactions or owner-authorized records. Verify official source availability and current reuse terms; classify licensed data, internal broker actuals, asking-price listings, public indexes, and synthetic data separately. No ToS-violating scraping; listings are not sale ground truth; synthetic data is development-only.
+- [ ] **9.3 Ingestion and provenance design:** define raw/normalized records, stable source IDs or hashes, import timestamps, source/license, observed date, quality/verification status, units, deduplication, correction history, and privacy-safe aggregation. Do not import personal identities.
+- [ ] **9.4 Label, feature, and snapshot contract:** specify target/adjustments, static and time-varying features, as-of cutoffs, and reproducible training snapshots. A snapshot may contain only observed historical actuals available at its cutoff; preserve the exact feature/label version.
+- [ ] **9.5 Forecast schema and access design:** propose migrations for source catalog, observed outcomes, snapshots, model registry, forecast runs/predictions, outcome matches, evaluations, and deployments. Define immutable completed runs, append-only forecast ledger, service-only writes, least-privilege RLS, and rollback. Verify on an isolated database before applying to BidMetric.
+- [ ] **9.6 Temporal evaluation and baselines:** establish chronological rolling-origin backtests and a final holdout; compare carry-forward/seasonal-naive or trend baselines before advanced models. Report MAE/RMSE/MASE/bias, interval coverage and probabilistic scores; avoid unqualified MAPE. No random split that leaks future observations.
+- [ ] **9.7 Modeling and hierarchy decision:** keep three concepts distinct: multilevel regression/partial pooling for nested cohorts; hierarchical time-series reconciliation (e.g. bottom-up/MinT) for aggregate-to-local forecast coherence; and continual learning from newly verified actuals. Assess compatible, licensed baselines such as StatsForecast and HierarchicalForecast before deeper models.
+- [ ] **9.8 Forecast ledger MVP (Pause 2):** create versioned run metadata and immutable point/interval predictions with as-of date, target period, geography/entity key, horizon, model version, snapshot ID, and uncertainty. Verify forecasts cannot be silently edited and held-out forecasts remain immutable.
+- [ ] **9.9 Actual collection and matching (Pause 3):** ingest only verified observed outcomes with source provenance; match matured forecasts by geography/entity, target period, and documented tolerance. Do not write forecasts or estimated values into the actuals table.
+- [ ] **9.10 Evaluation/reporting (Pause 4):** calculate horizon- and segment-level errors, bias, directional accuracy, interval coverage/calibration, and sample counts; suppress or aggregate small cells where privacy or source terms require it. Show predicted-vs-actual and uncertainty bands in an internal dashboard.
+- [ ] **9.11 Drift, retraining, and promotion (Pause 5):** monitor input and error drift; create model cards; retrain only from verified actuals available before the new cutoff. Use shadow/challenger evaluation and human approval before promotion; never learn from prior predictions.
+- [ ] **9.12 Public forecast UX and claims:** publish only after data sufficiency, backtest, privacy, and human review gates pass. Show as-of date, horizon, sample count, interval/uncertainty, provenance limitations, and “insufficient data” states; no guarantees or investment advice.
+- [ ] **9.13 Forecast acceptance:** prove temporal no-leakage, immutable completed forecasts, correct actual matching, per-horizon metric correctness, ground-truth-only retraining, reproducibility, uncertainty reporting, and safe data handling. Forecasting remains non-production until all gates pass.
+
+## Phase 10 — hardening, review, and launch
+
+- [ ] **10.1 Test suite:** add unit, integration, RLS, and end-to-end tests for approved flows; run existing build/lint.
+- [ ] **10.2 Security/accessibility/performance review:** secrets, input handling, RLS, uploads, keyboard/screen-reader support, and bundle/performance checks.
+- [ ] **10.3 CI:** add branch checks for lint, tests, and build; current local `npm test`, `npm run lint`, and `npm run build` pass, but no required CI workflow is configured yet.
+- [ ] **10.4 Rollback:** document migration backup/restore and feature rollback before production data changes.
+- [ ] **10.5 Staging:** verify staging against test/branch DB; no prod deployment from this work branch.
+- [ ] **10.6 Production readiness:** business approvals, privacy/legal review, data permission, secrets, SEO, analytics, and monitoring.
+- [ ] **10.7 Deploy:** only after a reviewed release checkpoint; monitor post-launch errors and provide a final report.
+
+## Human decisions / creative review
+
+- [ ] Choose the strongest differentiator: verified and transparent inventory; human local concierge; locality intelligence; or verified broker network.
+- [ ] Decide whether broker onboarding and the Golden Profile promotion belong in the first release or a later stage.
+- [ ] Approve initial localities, listing/data sources, broker vetting criteria, promotion duration/terms, auth methods, AI languages/provider, WhatsApp model, and marketing IDs.
+- [ ] Confirm PREM's first forecast geography, property/transaction segments, target units, and whether a forecast is useful to customers or only internal teams; exact market scope materially changes data feasibility.
+- [ ] Configure Google OAuth and SMS delivery in Supabase using provider credentials stored only in the provider dashboard/secret manager, never in Git or public tables.
+- [ ] Confirm staff/admin deletion and account-management boundaries separately; staff has cross-broker view/edit/publish, while admin-only deletion is the current app behavior.
