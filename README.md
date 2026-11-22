@@ -27,7 +27,7 @@ npm run lint
 npm run build
 ```
 
-Copy `.env.example` to `.env.local` and set `VITE_SUPABASE_URL`, `VITE_SUPABASE_PUBLISHABLE_KEY`, `VITE_WHATSAPP_NUMBER`, and `VITE_MAPBOX_ACCESS_TOKEN`. Set the same `VITE_MAPBOX_ACCESS_TOKEN` in Vercel Preview and Production for deployed maps. Mapbox browser tokens are public: restrict the supplied token to required public map/geocoding scopes and approved PREM origins in Mapbox. Never put a Supabase secret or service-role key in a `VITE_` variable. Do not commit `.env.local`.
+Copy `.env.example` to `.env.local` and set `VITE_SUPABASE_URL`, `VITE_SUPABASE_PUBLISHABLE_KEY`, `VITE_WHATSAPP_NUMBER`, and `VITE_MAPBOX_ACCESS_TOKEN`. Vercel Preview and Production require the same public Supabase URL/publishable key and Mapbox token. These variables are configured in both environments; redeploy after changing them. Mapbox browser tokens are public: restrict the supplied token to required public map/geocoding scopes and approved PREM origins in Mapbox. Never put a Supabase secret or service-role key in a `VITE_` variable. Do not commit `.env.local`.
 
 ## Supabase database
 
