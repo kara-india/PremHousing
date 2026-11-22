@@ -5,7 +5,7 @@
 
 ## Experience intent
 
-Help a visitor find an actual available PREM-approved property by maximum budget and BHK, then make a clear enquiry. The homepage experience is simpler than the separate Locality Intelligence Explorer: it makes no neighbourhood scores, predictions, or market heatmap claims.
+Help a visitor browse PREM’s published property collection by maximum budget and BHK, then make a clear enquiry. The homepage experience is simpler than the separate Locality Intelligence Explorer: it makes no neighbourhood scores, predictions, or market heatmap claims. The Explorer is one section within the existing PREM homepage; it does not replace the brand site, hero, service information, areas, story or contact flow.
 
 The existing PREM brand uses a warm ivory canvas, deep forest green, restrained brass accents, editorial serif headlines, compact sans-serif interface text, fine neutral dividers, and local real-estate imagery. Reuse these patterns and existing `App.css`/`index.css` tokens rather than rebranding the whole site. The design may refine the explorer's composition, not the global homepage.
 
@@ -17,7 +17,7 @@ Place the section after the existing primary search/intro and before the area/se
 2. **Filter rail:** maximum budget (INR input plus optional range slider), BHK segmented control (All, 1 BHK, 2 BHK, 3+ BHK), and a clear/reset action. More filters can be disclosed behind “More filters” only if the current data model supports them; avoid crowded controls in the first screen.
 3. **Results workspace:** desktop two-column layout: map about 52–58% of workspace width, scrollable cards about 42–48%. Maintain minimum readable widths; below tablet breakpoints switch to list with a map/list toggle rather than squeezing both panes.
 4. **Map controls:** accessible zoom buttons, visible provider attribution, “Search this area” only if pan-driven queries are implemented. A selected marker has a distinct outline/shape in addition to color and opens a compact property preview.
-5. **Cards:** property photo or neutral “Photo unavailable” placeholder; title; locality; asking price with “/month” for rent; BHK/bedrooms and area with explicit unit and basis when known; furnishing/features only when present; source/verification label only when supported by a trusted field; “View details” and “Enquire” actions.
+5. **Cards:** show the real available fields: title, locality, advertised asking price, bedrooms, area in sq ft, and furnishing/features only when present. Current records contain no image URLs, so do not add representative stock photos that might be mistaken for the actual property. Keep the clear no-photo treatment. Do not surface an unverified source badge; owner states the 32 published property records are theirs. Do not change their source fields as part of design work.
 
 At wide desktop, map/list should remain visible together. Do not turn the home page into a full-viewport analytics dashboard.
 
@@ -38,7 +38,7 @@ Segmented single-select: **All**, **1 BHK**, **2 BHK**, **3+ BHK**. It applies o
 
 - Budget and BHK filters are authoritative for both list and map. Apply the same query result set to card count and markers.
 - State whether filter changes apply immediately or after an explicit **Apply** action. On mobile, use draft filter values in a sheet and apply atomically.
-- “N properties” must be exact for the active scope; do not hardcode the image reference’s 32 or query an unbounded count from an unsupported dataset. Distinguish exact total from a capped list (“24 shown; refine filters”).
+- “N properties” must be exact for the active scope. The revised static preview’s count of 32 comes from a read-only count of the 32 currently published PREM records; it is not hardcoded as a general product value. A production query must calculate the active-filter count and distinguish it from a capped list.
 - Retain filters and selected locality when toggling map/list or opening a property detail and returning.
 
 ## Property selection and map/list behavior
@@ -85,7 +85,7 @@ Include only fields actually known and approved for public display. If no stable
 | Loading | Preserve controls and prior results when refreshing; show card skeletons and map placeholder; announce “Updating properties”. Avoid spinner-only layout shifts. |
 | Results | Exact current count, synchronized cards and markers, listing order label where applicable, pagination/capped-result note. |
 | Selected listing | Distinct card/marker selection plus preview; details and enquiry actions; close returns to the same search state. |
-| No approved inventory | Calm editorial empty state: “No PREM-approved listings are available in this area yet.” Offer reset/nearby area and existing WhatsApp contact. Do not fill with the 32 source-unverified rows. |
+| Current PREM collection | Render the actual published listing fields and label amounts as advertised asking prices. Do not imply completed transactions, verification, or location precision that the data does not contain. |
 | No filter matches | “No published listings match these filters.” Show clear filters and transparent alternatives that preserve hard constraints. |
 | Map unavailable | Explain map loading issue, retain/list results and filters, provide Retry. Do not show a fake map or simulated pins. |
 | Query error | Friendly retry, preserve filters and allow WhatsApp contact; do not describe the error as no inventory. |
@@ -96,7 +96,7 @@ Include only fields actually known and approved for public display. If no stable
 
 Current `src/App.jsx` already has the public search form and queries `properties` joined to `localities`, selecting `id,title,property_type,transaction_type,price,deposit,area_sqft,bedrooms,furnishing,description,features,image_urls,locality.name`, restricted to `status='published'`. It currently supports more than the requested budget/BHK filters. `PropertyResults.jsx` displays price, title, locality, bedroom count, area, available images, and an enquiry action. `src/lib/whatsapp.js` builds the existing WhatsApp URL.
 
-Not present in the homepage result select: bathrooms, floor, facing, a stable public reference, source, verification date, explicit area basis, or property geometry. The schema supports property `location` geography, but the Phase 0 aggregate found none populated. Locality `centroid` also has no populated values. The 32 published MagicBricks-attributed rows and 7 localities must remain untouched throughout the design phase and are not cleared for display as verified or mapped listings. Therefore design examples use schematic/illustrative placeholders only, never those values as actual inventory.
+Not present in the homepage result select: bathrooms, floor, facing, a stable public reference, source, verification date, explicit area basis, or property geometry. The schema supports property `location` geography, but the read-only preview query found none populated on the 32 published records. The revised preview may show actual title, locality, price, bedroom and area values, but uses no fabricated photos, exact property pins, or source claims. It does not update any of the 32 records or seven locality rows. The map treatment is labeled schematic and is not a claim about street or property geometry.
 
 Future component boundary (proposal): `PropertyExplorerSection` owns filter/result state; `ExplorerFilters` edits budget/BHK; `ExplorerMap` renders only safe, authorized points; `ExplorerResultList` and `PropertyCard` share the same selected property; `PropertyPreview` links to existing detail; `WhatsAppEnquiryLink` composes allowed fields through existing helper. Use existing query/data access where possible; do not add production dependencies or app code in the design phase.
 

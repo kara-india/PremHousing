@@ -1,6 +1,6 @@
 # PREM Unnumbered Design Phase — Handoff Summary
 
-**Status:** Design-only phase complete. This does not start or rename roadmap Phase 1.
+**Status:** Design-only preview refined after owner review. This does not start or rename roadmap Phase 1.
 **Date:** 2026-11-23
 **Repository:** `kara-india/PremHousing`; work is on `fix/prem-map-first-heatmap-recovery`, existing PR #4.
 
@@ -19,7 +19,8 @@ Both share PREM navigation, typography, color tokens, property identity, accessi
 - Preference fit uses separately disclosed, versioned criteria for Standard Residential & Connectivity, Peaceful Living, and High ROI / Investment Potential. No fixed numeric weights or confidence thresholds are claimed approved.
 - Recommendations show contributing evidence, unmet criteria, trade-offs, missing information, source/freshness and confidence; insufficient evidence results in no score/no recommendation.
 - Market layers remain distinct: sale asking price, monthly advertised rent, price per square foot with area basis, PREM-approved inventory, preference fit, POIs, and infrastructure/development. Every real measure needs source, date, coverage, sample size, methodology and measured/estimated/user-entered designation.
-- Static preview uses only schematic, explicitly non-geographic map treatment and no property facts. Current published MagicBricks-attributed rows and locality rows remain untouched and excluded from claims.
+- The revised preview uses actual published PREM listing fields in sample cards and accurately scoped inventory summaries. It presents prices as advertised asking prices, not completed sales, and does not repeat the database source label as a public-facing attribution. The owner states the 32 property records are theirs. No row was edited.
+- The property map is visibly schematic because none of the 32 published records has coordinates. The locality intelligence view uses exact stored locality labels and listing counts instead of inventing a heatmap or locality boundaries.
 
 ## Technical handoff grounded in current schema
 
@@ -43,10 +44,14 @@ Suggested design component groups: shared `PremShell`, `BudgetInput`, `BhkChips`
 - [Visual preview](previews/PREM_DESIGN_PREVIEW.html)
 - Existing [geospatial data contracts](../architecture/GEOSPATIAL_DATA_CONTRACTS.md), [map research](../research/GEOSPATIAL_STACK_EVALUATION.md), [source register](../research/MIRA_BHAYANDAR_DATA_SOURCE_REGISTER.md) and [map test plan](../testing/MAP_EXPLORER_TEST_PLAN.md) remain governing technical research.
 
+## Read-only inventory check for the revised preview
+
+On 2026-11-23, a read-only query of the PREM Supabase project found 32 published sale listings across seven stored locality labels. All 32 have price and area values; none has an image URL or populated property coordinates. There are 12 one-bedroom, 19 two-bedroom and one three-bedroom records. Advertised sale asking prices range from ₹27L to ₹5.25Cr, with a median of ₹84L. The locality chart uses listing counts: Mira Road 11, Mira Road East 7, Bhayandar East 6, Kashimira 5, and one each in Ketkipada, Mira Bhayandar and Mira Road West. These are inventory-description figures only; they do not measure transactions, locality quality, returns or forecasts. The query was read-only; no property or locality rows were modified.
+
 ## Explicitly not approved by this design
 
-Provider/plan and budget, locality boundary source or approximation policy, public point-precision rules, source reuse permissions, data completeness thresholds, profile criteria/weights, minimum sample sizes, published-versus-PREM-approved workflow, and whether uncertain external rows should remain public. The design itself made no data change. No forecasting model or feedback-learning workflow is defined here; forecasting remains a separate data-gated roadmap item.
+Provider/plan and budget, locality boundary source or approximation policy, public point-precision rules, source reuse permissions, data completeness thresholds, profile criteria/weights, minimum sample sizes, and the published-versus-PREM-approved workflow. The design itself made no data change. No forecasting model or feedback-learning workflow is defined here; forecasting remains a separate data-gated roadmap item.
 
 ## Phase protection
 
-No application implementation, Supabase mutation, migration, production configuration change, deployment or PR merge occurred. The design deliverables are handed off for review; stop here and do not automatically begin implementation.
+No application implementation, Supabase mutation, migration or production configuration change occurred. The preview is a static design artifact; it does not change the live homepage. Review the revised preview before implementation work begins.
