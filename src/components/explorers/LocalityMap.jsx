@@ -26,6 +26,7 @@ function LocalityMap({ localities = [], selectedLocality = '', onSelectLocality 
   const selectLocalityRef = useRef(onSelectLocality);
   const [geocoded, setGeocoded] = useState([]);
   const [geocodeState, setGeocodeState] = useState('loading');
+  const [geocodeError, setGeocodeError] = useState('');
   const [mapState, setMapState] = useState('loading');
   const normalized = useMemo(() => normalizeLocalities(localities), [localities]);
   const localitySignature = normalized.map(({ name }) => name).join('|');
@@ -47,16 +48,15 @@ function LocalityMap({ localities = [], selectedLocality = '', onSelectLocality 
 
     const controller = new AbortController();
     setGeocodeState('loading');
-    Promise.all(requestedNames.map(async (name) => {
-      try { return await geocodeLocality(name, controller.signal); }
-      catch (error) { if (error.name !== 'AbortError') return null; throw error; }
-    })).then((points) => {
+    setGeocodeError('');
+    Promise.all(requestedNames.map((name) => geocodeLocality(name, controller.signal))).then((points) => {
       const validPoints = points.filter(Boolean);
       setGeocoded(validPoints);
       setGeocodeState(validPoints.length ? 'ready' : 'empty');
     }).catch((error) => {
       if (error.name !== 'AbortError') {
         setGeocoded([]);
+        setGeocodeError(error.message || 'Mapbox could not resolve these localities.');
         setGeocodeState('error');
       }
     });
@@ -123,7 +123,7 @@ function LocalityMap({ localities = [], selectedLocality = '', onSelectLocality 
     : geocodeState === 'missing-token'
       ? 'Map is not configured yet. Add the Mapbox public token to the Vercel environment to load the locality map.'
       : geocodeState === 'error'
-        ? 'Mapbox could not resolve these localities. The locality list remains available.'
+        ? `${geocodeError} The locality list remains available.`
         : 'No locality coordinates were returned. The locality list remains available.';
 
   return <div className="locality-map-wrap">
