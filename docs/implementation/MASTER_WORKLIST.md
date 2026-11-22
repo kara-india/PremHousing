@@ -102,12 +102,23 @@
 - [ ] **8.6 Sitemap/local SEO:** generated sitemap for published listings and approved organization details.
 - [ ] **8.7 SEO/analytics acceptance:** validate events, metadata, canonical URLs, performance, and accessibility.
 
-## Phase 9 — future predictions (planned, data-gated)
+## Phase 9 — forecasting and verified feedback loop (planned, data-gated)
 
-- [ ] **9.1 Data sufficiency:** inspect BidMetric `market_trends` and valuation-field provenance, ownership/licensing, coverage, time span, and quality of historical transactions.
-- [ ] **9.2 Baseline:** only if data is sufficient, prototype a transparent non-LLM statistical model with uncertainty.
-- [ ] **9.3 UX/claims:** do not make guaranteed-price or investment claims; state uncertainty and show “insufficient data” when appropriate.
-- [ ] **9.4 Review gate:** obtain human approval before exposing forecast outputs publicly.
+Detailed design and acceptance criteria: [`forecasting-feedback-plan.md`](forecasting-feedback-plan.md). Forecast work is a separate, paused workstream; it does not authorize collecting restricted data or exposing estimates publicly.
+
+- [ ] **9.1 Scope and target definition (Pause 1):** confirm launch geography and hierarchy, eligible property/transaction types, forecast grain, target (nominal/real price or price per sq ft), currency/area units, horizons (candidate 1/3/5 years), forecast cadence, and decision use. Keep the India → Maharashtra → MMR → city → locality example provisional until approved.
+- [ ] **9.2 Data-source, license, and privacy audit:** prioritize verified registered transactions or owner-authorized records. Verify official source availability and current reuse terms; classify licensed data, internal broker actuals, asking-price listings, public indexes, and synthetic data separately. No ToS-violating scraping; listings are not sale ground truth; synthetic data is development-only.
+- [ ] **9.3 Ingestion and provenance design:** define raw/normalized records, stable source IDs or hashes, import timestamps, source/license, observed date, quality/verification status, units, deduplication, correction history, and privacy-safe aggregation. Do not import personal identities.
+- [ ] **9.4 Label, feature, and snapshot contract:** specify target/adjustments, static and time-varying features, as-of cutoffs, and reproducible training snapshots. A snapshot may contain only observed historical actuals available at its cutoff; preserve the exact feature/label version.
+- [ ] **9.5 Forecast schema and access design:** propose migrations for source catalog, observed outcomes, snapshots, model registry, forecast runs/predictions, outcome matches, evaluations, and deployments. Define immutable completed runs, append-only forecast ledger, service-only writes, least-privilege RLS, and rollback. Verify on an isolated database before applying to BidMetric.
+- [ ] **9.6 Temporal evaluation and baselines:** establish chronological rolling-origin backtests and a final holdout; compare carry-forward/seasonal-naive or trend baselines before advanced models. Report MAE/RMSE/MASE/bias, interval coverage and probabilistic scores; avoid unqualified MAPE. No random split that leaks future observations.
+- [ ] **9.7 Modeling and hierarchy decision:** keep three concepts distinct: multilevel regression/partial pooling for nested cohorts; hierarchical time-series reconciliation (e.g. bottom-up/MinT) for aggregate-to-local forecast coherence; and continual learning from newly verified actuals. Assess compatible, licensed baselines such as StatsForecast and HierarchicalForecast before deeper models.
+- [ ] **9.8 Forecast ledger MVP (Pause 2):** create versioned run metadata and immutable point/interval predictions with as-of date, target period, geography/entity key, horizon, model version, snapshot ID, and uncertainty. Verify forecasts cannot be silently edited and held-out forecasts remain immutable.
+- [ ] **9.9 Actual collection and matching (Pause 3):** ingest only verified observed outcomes with source provenance; match matured forecasts by geography/entity, target period, and documented tolerance. Do not write forecasts or estimated values into the actuals table.
+- [ ] **9.10 Evaluation/reporting (Pause 4):** calculate horizon- and segment-level errors, bias, directional accuracy, interval coverage/calibration, and sample counts; suppress or aggregate small cells where privacy or source terms require it. Show predicted-vs-actual and uncertainty bands in an internal dashboard.
+- [ ] **9.11 Drift, retraining, and promotion (Pause 5):** monitor input and error drift; create model cards; retrain only from verified actuals available before the new cutoff. Use shadow/challenger evaluation and human approval before promotion; never learn from prior predictions.
+- [ ] **9.12 Public forecast UX and claims:** publish only after data sufficiency, backtest, privacy, and human review gates pass. Show as-of date, horizon, sample count, interval/uncertainty, provenance limitations, and “insufficient data” states; no guarantees or investment advice.
+- [ ] **9.13 Forecast acceptance:** prove temporal no-leakage, immutable completed forecasts, correct actual matching, per-horizon metric correctness, ground-truth-only retraining, reproducibility, uncertainty reporting, and safe data handling. Forecasting remains non-production until all gates pass.
 
 ## Phase 10 — hardening, review, and launch
 
@@ -124,3 +135,4 @@
 - [ ] Choose the strongest differentiator: verified and transparent inventory; human local concierge; locality intelligence; or verified broker network.
 - [ ] Decide whether broker onboarding and the Golden Profile promotion belong in the first release or a later stage.
 - [ ] Approve initial localities, listing/data sources, broker vetting criteria, promotion duration/terms, auth methods, AI languages/provider, WhatsApp model, and marketing IDs.
+- [ ] Confirm PREM's first forecast geography, property/transaction segments, target units, and whether a forecast is useful to customers or only internal teams; exact market scope materially changes data feasibility.
