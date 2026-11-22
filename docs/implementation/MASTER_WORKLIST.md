@@ -168,3 +168,27 @@ Detailed design and acceptance criteria: [`forecasting-feedback-plan.md`](foreca
 - [ ] Confirm PREM's first forecast geography, property/transaction segments, target units, and whether a forecast is useful to customers or only internal teams; exact market scope materially changes data feasibility.
 - [ ] Configure Google OAuth and SMS delivery in Supabase using provider credentials stored only in the provider dashboard/secret manager, never in Git or public tables.
 - [ ] Confirm staff/admin deletion and account-management boundaries separately; staff has cross-broker view/edit/publish, while admin-only deletion is the current app behavior.
+
+
+## Phase 3 — map-first locality intelligence and heatmap foundation (NEW; not previously implemented)
+
+**Status:** [ ] Not started  
+**Audit:** [`MAP_HEATMAP_RECOVERY_AUDIT.md`](MAP_HEATMAP_RECOVERY_AUDIT.md)  
+**Scope note:** This is a new workstream. The 2026-11-23 `master` audit did not find the previously reported Mapbox/heatmap components; Phase 0.2 had removed the orphan Mapbox implementation. Do not mark any item below complete based on an earlier chat summary or unverified report.
+
+- [ ] **3.1 Provider and licensing decision:** compare MapLibre/approved tile providers, Mapbox commercial real-estate terms, and Google Maps restrictions. Keep renderer, basemap/tiles, geocoding, routing, POI source, and data store as separate decisions. Record license, attribution, cache/retention, quota, price, SLA, and lock-in. No paid provider or production account change until owner approval.
+- [ ] **3.2 UX and route:** add a first-class `/explore` or equivalent map-first neighbourhood experience, integrated with the current PREM IA. Design responsive desktop map + information panel, mobile map/list toggle, keyboard-accessible locality/list alternative, clear legend and error/empty states.
+- [ ] **3.3 Map adapter and lifecycle:** implement one supported map renderer behind a small provider boundary; stable init/cleanup; style-load-safe source/layer setup; correct GeoJSON validation/coordinate order; camera bounds for Mira-Bhayandar; resilient missing-token/no-network state; no duplicate layers/listeners.
+- [ ] **3.4 Illustrative spatial fixture:** create a separate non-production fixture file with explicit `illustrative=true`, source description, generated-at timestamp, and obvious UI disclosure. Use synthetic local coordinates only to demonstrate rendering. Never seed these records into Supabase or describe them as market facts.
+- [ ] **3.5 Layer system:** separate layer state/contracts for (a) asking sale price, (b) advertised rent, (c) price per carpet-area sqft, (d) approved PREM inventory, and (e) preference fit. Keep POIs as separate context overlays. Each layer has its own visual encoding, units, legend, filters, and data-quality state.
+- [ ] **3.6 Heatmap rendering:** select point density, locality choropleth, society highlights or clusters based on data granularity. Avoid smooth interpolation when sparse observations do not support it. Ensure layers render visibly at default zoom, controls update actual map visibility/paint, and map labels remain legible.
+- [ ] **3.7 Empty/insufficient-data UX:** actual inventory remains empty until approved listings exist. Sale/rent/price layers show “No verified observations yet” or “Illustrative preview” states. Sample counts, observation period, area basis, source and freshness are mandatory when real observations are added. Suppress sparse cells and avoid false precision.
+- [ ] **3.8 Locality explorer:** support Mira Road East/West, Bhayandar East/West, Kashimira; selectable boundaries/points; a contextual editorial detail panel; locality comparison with source/freshness; no unsupported score or safety claims.
+- [ ] **3.9 Property integration:** query only existing published PREM inventory and never display drafts. Empty state is expected and must be graceful. Keep listing markers distinct from statistical surfaces.
+- [ ] **3.10 Preference match:** hard filters first; transparent soft preference weights second. Explain factors and missing coverage. No arbitrary score percentages or claims of objective superiority.
+- [ ] **3.11 POI/context:** use only sources with documented license and coverage. Keep provider-specific restricted content within its terms. POI displays have category, source, checked-at date and confidence; no invented travel times.
+- [ ] **3.12 Accessibility/performance:** keyboard-operable controls, screen-reader text alternatives, accessible sequential colour ramps, reduced motion, touch targets, map/list fallback and mobile performance tests.
+- [ ] **3.13 Verification:** test all layer toggles, zoom ranges, filters, no-data/token/network cases, route deep links, mobile/desktop, console/network errors, lint, tests, and production build. Capture browser screenshots of actual rendered map states. Build success alone is not proof of rendering.
+- [ ] **3.14 Documentation:** update `DESIGN.md` (create only if no equivalent exists), `DESIGN_DECISIONS.md`, `MAP_INTELLIGENCE_SPEC.md`, README and this worklist as appropriate. Preserve the audit and all prior backend/data rights decisions.
+- [ ] **3.15 Approval gate:** present provider recommendation, design screenshots, cost/rights implications and test evidence. Stop for explicit owner approval before production data/provider/DB integration.
+
