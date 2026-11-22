@@ -1,38 +1,39 @@
 # PREM Design Phase — QA Report
 
-**Status:** Design artifact review; no application, database, or production changes.
+**Status:** Static design preview revised after owner review; no application implementation or database mutation.
 **Date:** 2026-11-23
 
 ## Review scope
 
-Reviewed the existing homepage visual system, routes, Supabase client/query, WhatsApp URL builder, Phase 0 map design/data contracts and source register, the owner-provided design brief/image, parallel design specs, and the static preview at [`previews/PREM_DESIGN_PREVIEW.html`](previews/PREM_DESIGN_PREVIEW.html).
+Reviewed the current PREM homepage shell, design brief and concept image, the previous preview, and the published inventory through read-only SQL against the PremHousing Supabase project. Used only listing display fields and locality aggregates. Did not query owner/contact fields, source URLs, or exact addresses. Did not update any property or locality rows.
+
+## Owner feedback addressed
+
+- The two explorers now sit within the recognizable PREM website: the existing navigation, local hero, search card, contact action and footer remain around them. Property discovery is an embedded homepage section; the locality workspace is reached through the same site navigation and is shown as a section in this static preview.
+- Replaced the dashboard-like standalone mockup with the PREM editorial palette, serif/sans hierarchy, familiar hero, restrained filter rail, listing cards and compact data workspace. It is no longer presented as a replacement homepage.
+- Used real published PREM record fields in the four sample property cards. The owner states these records are theirs. No synthetic property facts or stock property photos are used. The database currently has no listing images.
+- Corrected public-facing attribution: the preview does not label the records as MagicBricks. It labels them as PREM published inventory and asks only values directly observed in those rows.
+- Added exact read-only inventory summaries: 32 published records, 7 stored locality labels, 12 one-bedroom, 19 two-bedroom and one three-bedroom records; asking range ₹27L–₹5.25Cr and median asking price ₹84L. The chart shows counts by stored locality label. These values describe advertised inventory, not sale transactions, locality performance or forecasts.
+- Removed fabricated market heatmap and fake property pins. The locality grouping is presented as a bar chart, and the map is marked schematic because there are no published listing coordinates. There are also no image URLs on the published records.
+
+## Data quality notes
+
+Read-only SQL on project `swrhmpnjyvnascpqdjir` confirmed the 32 published records all have price and area fields, zero have an image URL, and zero have populated property coordinates. The locality count distribution shown in the preview sums to 32. The 7 locality rows have no centroids. No other tables or rows were queried for display data.
 
 ## Acceptance review
 
-| Requirement | Result | Evidence / limitation |
+| Requirement | Result | Evidence / limit |
 |---|---|---|
-| Distinct consumer and analytical explorers | Pass | IA and separate specs; homepage focuses on approved inventory/enquiry, `/insights` proposal focuses on locality evidence and decision support. |
-| Existing PREM identity preserved | Pass | Design system uses cream/forest/gold, existing serif/sans hierarchy and current shell; no global rebrand. |
-| Desktop and mobile direction | Pass | Explorer specs, responsive/accessibility doc, and visual preview include desktop and narrow-screen compositions. |
-| Homepage filters/cards/map sync/WhatsApp | Pass | UX spec includes budget, BHK, matching-query behavior, keyboard list alternative, selected property reference and existing WhatsApp flow. No real record values shown. |
-| Three preference profiles | Pass | Exactly three profiles specified; no numerical weights claimed as approved. |
-| Evidence layers and comparison | Pass with data gates | Units, source, observation date, coverage, sample counts and methodology are required; current-data view intentionally says unavailable. |
-| Recommendation explainability | Pass with data gates | Hard eligibility is separated from preference fit and evidence confidence. No opaque score/guarantees. |
-| Empty/loading/error/no-match/insufficient-data | Pass | State matrix in specs and visual preview. |
-| Technical/schema handoff | Pass | Current field availability and absent contracts documented; see [`DESIGN_PHASE_SUMMARY.md`](DESIGN_PHASE_SUMMARY.md). |
-| Data protection | Pass | No database connector/write used in this Design Phase; no app source changed. The 32 property rows and 7 locality rows were not queried or touched during this phase. |
+| Keep explorers inside the main PREM site | Pass | Existing site navigation, hero, search, contact and footer surround the explorer sections. |
+| Match PREM’s existing identity | Pass | Reuses the live site's forest, ivory and brass palette, editorial serif headings, and compact sans interface. |
+| Use actual property data | Pass | Cards and inventory summaries use real published fields/aggregates; no record was changed. |
+| Keep asking data distinct from transaction data | Pass | Price labels explicitly say advertised asking; copy disclaims transactions and forecasts. |
+| Avoid fabricated property photos and location pins | Pass | No actual photo URLs or coordinates exist; preview says so and marks the map schematic. |
+| Show the locality dataset honestly | Pass | Bar chart uses stored locality names and counts; no area boundaries or quality rankings are implied. |
+| Preserve responsive layouts | Pass | Preview defines desktop, tablet and mobile breakpoints. |
 
-## Issues resolved during review
+## Still gated for implementation
 
-- Selected `/insights` as the proposed dedicated Locality Intelligence route because it matches the existing navigation concept “Market Insights”; the Homepage Explorer remains an embedded section, not a competing `/explore` route. Route selection is a proposal for later implementation review.
-- Kept property discovery map separate from market-statistic layers. Published status alone is not a provenance or geolocation grant.
-- Used schematic map treatment and explicit unavailable states; avoided fabricated market numbers, synthetic listing facts, invented boundaries and false local scores.
-- Price/area basis, actual transaction values, rental evidence, licensed locality polygons, POIs, infrastructure and data freshness remain gated until qualified sources exist.
+This preview is static, not a live filter or production data integration. A deployed map needs a licensed/approved provider and coordinate publication policy. Real property photos need owner-approved images. Locality comparisons, recommendations, investment analysis and predictions need defined, sourced evidence and methodology. Do not infer these from asking listings or locality counts.
 
-## Remaining implementation-stage validation
-
-These are not design omissions and must be tested before release: rendered behavior with an approved map provider; actual local-coordinate and boundary rights; keyboard/screen-reader checks on implementation; responsive device QA; RLS-bounded map payload; provider failure and performance; real licensed evidence; and re-validation that production rows remain unchanged.
-
-## Scope confirmation
-
-No React/CSS app modules, dependencies, routes, Supabase schema, rows, provider settings, deployments, or GitHub merges were changed. This report does not certify market-data validity or a production-ready score model.
+No React or application CSS, dependencies, Supabase schema, rows, provider settings, production homepage, or domain configuration were changed in this revision.
