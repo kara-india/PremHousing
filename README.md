@@ -29,7 +29,7 @@ Copy `.env.example` to `.env.local` and set `VITE_SUPABASE_URL`, `VITE_SUPABASE_
 
 ## Supabase database
 
-PREM uses the `PremHousing` Supabase project (`swrhmpnjyvnascpqdjir`). BidMetric is inactive for this app; do not apply PREM migrations or writes there. The existing PremHousing foundation contains `localities`, `properties`, and `leads` with PostGIS, search indexes, checks, and foreign keys. There is no seed data.
+PREM uses the `PremHousing` Supabase project (`swrhmpnjyvnascpqdjir`). BidMetric is not used by this app; do not apply PREM migrations or writes there. A read-only consolidation audit found no BidMetric public-table rows or Storage objects to transfer. Its schema conflicts with PREM's native `properties` and `leads` design, so its migrations were not replayed. See [`bidmetric-supabase-audit.md`](docs/implementation/bidmetric-supabase-audit.md#2026-11-23-consolidation-decision) for the object inventory and migration decision. The existing PremHousing foundation contains `localities`, `properties`, and `leads` with PostGIS, search indexes, checks, and foreign keys. There is no seed data.
 
 The tracked migration history is:
 

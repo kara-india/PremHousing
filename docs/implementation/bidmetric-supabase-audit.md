@@ -82,3 +82,24 @@ The advisor now reports the 12 locked tables as informational RLS-enabled/no-pol
 6. Assess provenance and sufficiency of `market_trends` and valuation fields before building public predictions.
 
 Supabase guidance: [Row Level Security](https://supabase.com/docs/guides/database/postgres/row-level-security), [custom claims and RBAC](https://supabase.com/docs/guides/api/custom-claims-and-role-based-access-control-rbac), [local migrations](https://supabase.com/docs/guides/local-development/database-migrations).
+
+## 2026-11-23 consolidation decision
+
+The owner selected PremHousing (`swrhmpnjyvnascpqdjir`) as PREM's only Supabase database for now. BidMetric (`iwgopllwmpesnpsnqlwn`) was inspected read-only to decide whether useful schema, data, or files should be migrated. Both projects were confirmed `ACTIVE_HEALTHY` in the same organization and region.
+
+| Inventory | BidMetric source | PremHousing target |
+|---|---:|---:|
+| Public tables | 29 | 4 |
+| Public functions | 12 | 2 |
+| Recorded migrations | 18 | 3 |
+| Auth users | 3 | 0 |
+| Storage buckets / objects | 0 / 0 | 0 / 0 |
+| Public table rows | 0 | 0 |
+
+No table rows or files are available to transfer. No Auth identities were copied: password hashes, provider identities, and sessions are managed by Supabase Auth and should not be transplanted as ordinary application rows. The three BidMetric accounts will need to establish accounts in PremHousing if they are still needed.
+
+No BidMetric public schema or migrations were replayed. The source `properties` and `leads` tables conflict with PremHousing's native tables and differ in enums, locality relationships, row lifecycle, and ownership. The archived hardening migration also depends on BidMetric-only tables and functions; replaying it would fail or change the wrong security boundary. BidMetric broker/agent structures are not accepted as PREM's authorization source because the audited role and owner mappings are unsafe for that purpose.
+
+The useful product direction is carried forward as PREM requirements: transparent valuation research, time-series forecasting with feedback from verified actuals, and broker activity oversight by trusted staff. These are already documented in [`forecasting-feedback-plan.md`](forecasting-feedback-plan.md), [`auth-onboarding-plan.md`](auth-onboarding-plan.md), and the master worklist. Forecast tables and model data are intentionally not created yet: source provenance, historical coverage, and forecast sufficiency have not been verified. PremHousing's own migration ledger is therefore correctly different from BidMetric's; there are no pending source data/schema migrations to apply for Phase 0.
+
+This was an inventory and disposition only. Neither project was paused, deleted, or modified by the consolidation check.
