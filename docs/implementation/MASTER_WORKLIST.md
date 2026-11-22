@@ -25,12 +25,13 @@
 ## Phase 1 — authentication, roles, and staff foundation
 
 - [x] **1.1a Auth identity/role inventory:** mapped the existing staff login to Supabase email/password and checked the Auth/profile/agent role boundaries. `auth.users.id` is the identity key; `profiles.role` is self-updatable and cannot authorize staff; trusted `app_metadata.role` is the current PREM staff gate. See [`bidmetric-supabase-audit.md`](bidmetric-supabase-audit.md).
-- [ ] **1.1b Provider/audience decision:** recommended MVP is email/password for staff only, no public signup, and anonymous public browsing; defer customer/broker sign-in, Phone OTP, and Google until launch needs and provider setup are confirmed. Auth provider toggles could not be inspected through the connected Supabase tools; verify them in the Dashboard before changing auth settings.
-- [ ] **1.2 Login UI:** email/password staff login exists; implement/verify any selected OTP or OAuth flows and provide recovery UX.
-- [ ] **1.3 Role provisioning:** PREM currently checks trusted `app_metadata.role`; BidMetric's `profiles.role` has buyer/seller/partner values and is self-updatable. Keep privileged roles on a trusted server-managed path; define staff/broker access after the isolated RLS migration is verified.
+- [x] **1.1b Audience and access decision:** owner confirmed email or mobile sign-in for staff, customers, and brokers; staff should be able to view all broker listings/activity. Use separate customer, broker-membership, and staff authorization boundaries; do not grant cross-broker access through the self-updatable `profiles.role`.
+- [ ] **1.1c Sign-in challenge/provider setup:** choose password vs. OTP/magic-link behavior for email and mobile, account-linking rules when a user has both identifiers, SMS delivery provider/budget, and dashboard provider settings. Current connector cannot inspect Auth toggles; no provider settings have been changed.
+- [ ] **1.2 Login UI:** extend the existing staff email/password form to accept the selected verified email/mobile flows for customer and broker accounts; add recovery and safe post-login routing. Prevent public self-selection of staff privileges.
+- [ ] **1.3 Role provisioning:** continue using trusted server-managed staff claims or an equivalent protected role-assignment path; model brokers through organization membership and customers through their own identity/data. Do not authorize from `profiles.role` or editable `user_metadata`.
 - [ ] **1.4 Session/role context:** move role/session handling to a shared auth context/hook if the staff/broker/public surfaces require it.
-- [ ] **1.5 RLS policy set:** resolve 12 RLS-disabled public tables, prevent self-assigned profile roles, restrict agent verification fields, and hide private property columns. Add/review broker/customer/audit policies only after isolated testing.
-- [ ] **1.6 Auth/RLS tests:** test anon, staff, admin, broker owner, and broker agent access, including cross-broker isolation.
+- [ ] **1.5 RLS policy set:** prevent self-assigned profile roles, restrict agent verification fields, hide private property columns, give staff approved cross-broker read access to broker listings/activity, keep brokers within their organization/assignments, and keep customer data owner-scoped. Verify on an isolated database before rollout.
+- [ ] **1.6 Auth/RLS tests:** test anon, customer, staff, admin, broker owner, and broker agent access; prove staff can read all broker listings/activity, brokers cannot see another organization, customers see only their own records, and read-only staff access does not silently become write access.
 
 ## Phase 2 — admin and listing moderation
 
@@ -137,4 +138,5 @@ Detailed design and acceptance criteria: [`forecasting-feedback-plan.md`](foreca
 - [ ] Decide whether broker onboarding and the Golden Profile promotion belong in the first release or a later stage.
 - [ ] Approve initial localities, listing/data sources, broker vetting criteria, promotion duration/terms, auth methods, AI languages/provider, WhatsApp model, and marketing IDs.
 - [ ] Confirm PREM's first forecast geography, property/transaction segments, target units, and whether a forecast is useful to customers or only internal teams; exact market scope materially changes data feasibility.
-- [ ] Confirm the launch audience and auth methods: staff-only email/password (recommended for the current app), or customer/broker accounts and additional sign-in methods.
+- [ ] Choose email and mobile challenge modes, SMS provider/budget, and whether one account can link both email and phone. The owner has confirmed all three account types need email/mobile sign-in.
+- [ ] Confirm whether staff’s cross-broker permission is view-only or also includes editing/publishing broker listings; the current admin UI lets `staff` edit/publish and must be aligned with the chosen boundary.
