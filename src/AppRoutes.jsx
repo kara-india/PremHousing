@@ -7,12 +7,14 @@ const AdminDashboard = lazy(() => import('./components/sections/AdminDashboard.j
 const PropertyDetailPage = lazy(() => import('./components/sections/PropertyDetailPage.jsx'));
 const AuthPage = lazy(() => import('./components/sections/AuthPage.jsx'));
 const OnboardingPage = lazy(() => import('./components/sections/OnboardingPage.jsx'));
+const LocalityInsightsPage = lazy(() => import('./components/sections/LocalityInsightsPage.jsx'));
 
 function AppRoutes() {
   return (
     <Suspense fallback={<main aria-live="polite" style={{ minHeight: '100vh', display: 'grid', placeItems: 'center', color: '#26382f', font: '600 12px sans-serif' }}>Loading PREM…</main>}>
       <Routes>
         <Route path="/" element={<App />} />
+        <Route path="/insights" element={<LocalityInsightsPage />} />
         <Route path="/admin" element={<RequireAuth staffOnly><AdminDashboard /></RequireAuth>} />
         <Route path="/properties/:propertyId" element={<PropertyDetailPage />} />
         <Route path="/auth" element={<AuthPage />} />

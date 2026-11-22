@@ -1,8 +1,7 @@
-import { createElement, useMemo, useState } from 'react';
+import { createElement, useEffect, useMemo, useState } from 'react';
 import {
   ArrowRight, Building2, Check, ChevronDown,
-  Home, KeyRound, MapPin, Menu, MessageCircle, Phone, Search, ShieldCheck,
-  Store, X
+  Home, KeyRound, MapPin, MessageCircle, Phone, Search, ShieldCheck, Store
 } from 'lucide-react';
 import './App.css';
 import './components/HeroMedia.css';
@@ -10,6 +9,8 @@ import { supabase } from './lib/supabase';
 import { whatsappUrl } from './lib/whatsapp';
 import HeroMedia from './components/HeroMedia';
 import PropertyResults from './components/sections/PropertyResults';
+import { SiteFooter, SiteHeader } from './components/SiteChrome.jsx';
+import { LOCALITY_NAMES } from './lib/localities.js';
 
 const areas = [
   { name: 'Mira Road East', note: 'Residential homes, resale & rentals', image: 'https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=900&q=85' },
@@ -25,20 +26,71 @@ const services = [
   { icon: Store, title: 'Commercial property', text: 'Find or lease shops, offices and other business spaces.', action: 'Commercial' },
 ];
 
+async function searchPublishedProperties(filters) {
+  if (!supabase) throw new Error('Property search is not configured.');
+  const commercialTypes = ['Shop', 'Office', 'Commercial unit'];
+  let query = supabase
+    .from('properties')
+    .select('id,title,property_type,transaction_type,price,deposit,area_sqft,bedrooms,furnishing,description,features,image_urls,locality:localities!inner(name)', { count: 'exact' })
+    .eq('status', 'published')
+    .order('price', { ascending: true })
+    .limit(1000);
+
+  if (filters.transaction === 'Buy') query = query.eq('transaction_type', 'sale');
+  if (filters.transaction === 'Rent') query = query.eq('transaction_type', 'rent');
+  if (filters.transaction === 'Commercial' || commercialTypes.includes(filters.propertyType)) query = query.eq('property_type', 'commercial');
+  if (filters.transaction !== 'Commercial' && !commercialTypes.includes(filters.propertyType)) {
+    if (filters.propertyType === '1 BHK') query = query.eq('bedrooms', 1);
+    if (filters.propertyType === '2 BHK') query = query.eq('bedrooms', 2);
+    if (filters.propertyType === '3 BHK or larger') query = query.gte('bedrooms', 3);
+  }
+  if (filters.locality && filters.locality !== 'Flexible / nearby') query = query.ilike('locality.name', `%${filters.locality}%`);
+  const maxPrice = Number(filters.budget);
+  if (Number.isFinite(maxPrice) && maxPrice > 0) query = query.lte('price', maxPrice);
+  const deposit = Number(filters.minimumDeposit);
+  if (Number.isFinite(deposit) && deposit > 0) query = query.gte('deposit', deposit);
+  const areaFrom = Number(filters.minimumArea);
+  if (Number.isFinite(areaFrom) && areaFrom > 0) query = query.gte('area_sqft', areaFrom);
+  const areaTo = Number(filters.maximumArea);
+  if (Number.isFinite(areaTo) && areaTo > 0) query = query.lte('area_sqft', areaTo);
+  if (filters.furnishing !== 'Any furnishing') query = query.eq('furnishing', filters.furnishing);
+  return query;
+}
+
 function App() {
-  const [transaction, setTransaction] = useState('Rent');
+  const [transaction, setTransaction] = useState('Buy');
   const [propertyType, setPropertyType] = useState('Any property');
-  const [locality, setLocality] = useState('Mira Road');
+  const [locality, setLocality] = useState('Flexible / nearby');
   const [budget, setBudget] = useState('');
   const [minimumDeposit, setMinimumDeposit] = useState('');
   const [minimumArea, setMinimumArea] = useState('');
   const [maximumArea, setMaximumArea] = useState('');
   const [furnishing, setFurnishing] = useState('Any furnishing');
   const [properties, setProperties] = useState([]);
-  const [searchState, setSearchState] = useState('idle');
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [lead, setLead] = useState({ name: '', phone: '', requirement: 'Rent a property', details: '' });
+  const [propertyCount, setPropertyCount] = useState(0);
+  const [searchState, setSearchState] = useState('loading');
+  const [lead, setLead] = useState({ name: '', phone: '', requirement: 'Buy a property', details: '' });
   const [notice, setNotice] = useState('');
+
+  useEffect(() => {
+    let active = true;
+    searchPublishedProperties({
+      transaction: 'Buy', propertyType: 'Any property', locality: 'Flexible / nearby', budget: '',
+      minimumDeposit: '', minimumArea: '', maximumArea: '', furnishing: 'Any furnishing',
+    }).then(({ data, error, count }) => {
+      if (!active) return;
+      if (error) throw error;
+      setProperties(data ?? []);
+      setPropertyCount(count ?? data?.length ?? 0);
+      setSearchState('ready');
+    }).catch(() => {
+      if (!active) return;
+      setProperties([]);
+      setPropertyCount(0);
+      setSearchState('error');
+    });
+    return () => { active = false; };
+  }, []);
 
   const requirementMessage = useMemo(() => (
     `Requirement: ${transaction}; Property type: ${propertyType}; Preferred area: ${locality || 'Flexible'}; Maximum price: ${budget || 'Not specified'}; Minimum deposit: ${minimumDeposit || 'Not specified'}; Area: ${minimumArea || 'Any'}–${maximumArea || 'Any'} sq ft; Furnishing: ${furnishing}`
@@ -58,48 +110,16 @@ function App() {
       document.getElementById('contact')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
       return;
     }
-    if (!supabase) {
-      setSearchState('error');
-      document.getElementById('property-results')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      return;
-    }
-
     setSearchState('loading');
-    let query = supabase
-      .from('properties')
-      .select('id,title,property_type,transaction_type,price,deposit,area_sqft,bedrooms,furnishing,description,features,image_urls,locality:localities!inner(name)')
-      .eq('status', 'published')
-      .order('price', { ascending: true })
-      .limit(24);
-
-    if (transaction === 'Buy') query = query.eq('transaction_type', 'sale');
-    if (transaction === 'Rent') query = query.eq('transaction_type', 'rent');
-    if (transaction === 'Commercial' || ['Shop', 'Office', 'Commercial unit'].includes(propertyType)) {
-      query = query.eq('property_type', 'commercial');
-    }
-    if (transaction !== 'Commercial' && !['Shop', 'Office', 'Commercial unit'].includes(propertyType)) {
-      if (propertyType === '1 BHK') query = query.eq('bedrooms', 1);
-      if (propertyType === '2 BHK') query = query.eq('bedrooms', 2);
-      if (propertyType === '3 BHK or larger') query = query.gte('bedrooms', 3);
-    }
-    if (locality && locality !== 'Flexible / nearby') query = query.ilike('locality.name', `%${locality}%`);
-    const maxPrice = Number(budget);
-    if (Number.isFinite(maxPrice) && maxPrice > 0) query = query.lte('price', maxPrice);
-    const deposit = Number(minimumDeposit);
-    if (Number.isFinite(deposit) && deposit > 0) query = query.gte('deposit', deposit);
-    const areaFrom = Number(minimumArea);
-    if (Number.isFinite(areaFrom) && areaFrom > 0) query = query.gte('area_sqft', areaFrom);
-    const areaTo = Number(maximumArea);
-    if (Number.isFinite(areaTo) && areaTo > 0) query = query.lte('area_sqft', areaTo);
-    if (furnishing !== 'Any furnishing') query = query.eq('furnishing', furnishing);
-
     try {
-      const { data, error } = await query;
+      const { data, error, count } = await searchPublishedProperties({ transaction, propertyType, locality, budget, minimumDeposit, minimumArea, maximumArea, furnishing });
       if (error) throw error;
       setProperties(data ?? []);
+      setPropertyCount(count ?? data?.length ?? 0);
       setSearchState('ready');
     } catch {
       setProperties([]);
+      setPropertyCount(0);
       setSearchState('error');
     }
     document.getElementById('property-results')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -129,32 +149,7 @@ function App() {
 
   return (
     <div className="site-shell">
-      <div className="topline">
-        <div className="wrap topline-inner">
-          <span><MapPin size={14} /> Mira Road · Bhayandar · Maharashtra</span>
-          <a href="tel:+919833325547"><Phone size={14} /> +91 98333 25547</a>
-        </div>
-      </div>
-
-      <header className="header">
-        <div className="wrap nav-inner">
-          <a className="brand" href="#home" aria-label="PREM home">
-            <span className="brand-mark">P<span>.</span></span>
-            <span className="brand-copy"><strong>PREM</strong><small>PROPERTY & REAL ESTATE MARKET</small></span>
-          </a>
-          <button className="mobile-toggle" onClick={() => setMobileMenuOpen(!mobileMenuOpen)} aria-label={mobileMenuOpen ? 'Close menu' : 'Open menu'}>
-            {mobileMenuOpen ? <X size={22} /> : <Menu size={22} />}
-          </button>
-          <nav className={mobileMenuOpen ? 'nav-links open' : 'nav-links'}>
-            <a href="#search" onClick={() => setMobileMenuOpen(false)}>Find a property</a>
-            <a href="#services" onClick={() => setMobileMenuOpen(false)}>What we do</a>
-            <a href="#areas" onClick={() => setMobileMenuOpen(false)}>Explore areas</a>
-            <a href="#about" onClick={() => setMobileMenuOpen(false)}>Our story</a>
-            <a href="/auth" onClick={() => setMobileMenuOpen(false)}>Sign in</a>
-            <a className="nav-cta" href="#contact" onClick={() => setMobileMenuOpen(false)}>Talk to our team <ArrowRight size={15} /></a>
-          </nav>
-        </div>
-      </header>
+      <SiteHeader />
 
       <main>
         <section className="hero" id="home">
@@ -180,7 +175,7 @@ function App() {
                 ))}
               </div>
               <form className="search-form" onSubmit={submitSearch}>
-                <label className="field"><span>Preferred locality / micro-market</span><span className="select-wrap"><MapPin size={17} /><select value={locality} onChange={(e) => setLocality(e.target.value)}><option>Mira Road</option><option>Mira Road East</option><option>Mira Road West</option><option>Bhayandar East</option><option>Kashimira</option><option>Ketkipada</option><option>Mira Bhayandar</option><option>Flexible / nearby</option></select><ChevronDown size={15} /></span></label>
+                <label className="field"><span>Preferred locality / micro-market</span><span className="select-wrap"><MapPin size={17} /><select value={locality} onChange={(e) => setLocality(e.target.value)}>{LOCALITY_NAMES.map((name) => <option key={name}>{name}</option>)}<option>Flexible / nearby</option></select><ChevronDown size={15} /></span></label>
                 <label className="field"><span>BHK / property type</span><span className="select-wrap"><Building2 size={17} /><select value={propertyType} onChange={(e) => setPropertyType(e.target.value)}><option>Any property</option><option>1 BHK</option><option>2 BHK</option><option>3 BHK or larger</option><option>Shop</option><option>Office</option><option>Commercial unit</option></select><ChevronDown size={15} /></span></label>
                 <label className="field"><span>Maximum budget (₹)</span><input type="number" min="0" step="1000" value={budget} onChange={(e) => setBudget(e.target.value)} placeholder={transaction === 'Buy' ? 'e.g. 8500000' : 'e.g. 25000'} /></label>
                 <label className="field"><span>Minimum deposit (₹)</span><input type="number" min="0" step="1000" value={minimumDeposit} onChange={(e) => setMinimumDeposit(e.target.value)} placeholder="Optional" /></label>
@@ -205,6 +200,7 @@ function App() {
           <PropertyResults
             state={searchState}
             properties={properties}
+            count={propertyCount}
             onEnquire={(property) => {
               setLead((current) => ({
                 ...current,
@@ -278,10 +274,10 @@ function App() {
           </div>
         </section>
 
-        <section className="closing-strip"><div className="wrap closing-inner"><span>PREM</span><p>Property discovery and market intelligence for your next move.</p><a href="#home">Back to top ↑</a></div></section>
       </main>
 
-      <footer className="footer"><div className="wrap footer-main"><a className="brand footer-brand" href="#home"><span className="brand-mark">P<span>.</span></span><span className="brand-copy"><strong>PREM</strong><small>PROPERTY & REAL ESTATE MARKET</small></span></a><p>Residential and commercial property guidance, local market insight and future-facing predictions.</p><div className="footer-links"><a href="#services">Services</a><a href="#areas">Areas</a><a href="#about">About</a><a href="#contact">Contact</a><a href="/privacy.html">Privacy</a><a href="/auth">Account sign-in</a><a href="/admin">Staff sign-in</a></div></div><div className="wrap footer-bottom"><span>© {new Date().getFullYear()} PREM. All rights reserved.</span><span>Property availability and details are subject to confirmation.</span></div></footer>
+      <SiteFooter />
+
       <a className="floating-whatsapp" href={whatsappUrl('Hello PREM, I would like to discuss a property requirement.')} target="_blank" rel="noreferrer" aria-label="Message PREM on WhatsApp"><MessageCircle size={21} /><span>WhatsApp us</span></a>
     </div>
   );
