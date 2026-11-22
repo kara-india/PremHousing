@@ -35,6 +35,27 @@
   - Deliver `docs/implementation/technology-cost-research.md` with scenario table, sources, formulas, cost controls, and decisions requiring later owner input.
   - Acceptance: totals are reproducible from assumptions, identify provider fees/free-tier risks, and separate MVP from production scale costs.
 
+- [x] **0.9 Map-first locality intelligence research and recovery audit:** completed current checkout/PR reconciliation, product teardown, renderer/provider and source-rights research, design specification, spatial contracts, QA plan, README/worklist corrections and owner decision handoff. No app code, provider setup, production schema/data writes, deployment or merge in this research task.
+  - **Verified current state (2026-11-23):** no map route/renderer is active; existing public property queries select `published` rows. Live aggregate inspection of PremHousing ref `swrhmpnjyvnascpqdjir` found 7 public localities (0 centroids) and 32 published property rows (0 geospatial locations); all 32 name `magicbricks` as source and point to MagicBricks URLs. No record-level data or PII was read. This contradicts older “empty inventory” notes. Provenance/reuse rights are unverified; do not present these records as PREM-approved map/intelligence data or change their status as part of this audit.
+  - **Research files:** [`COMPETITIVE_MAP_PRODUCT_TEARDOWN.md`](../research/COMPETITIVE_MAP_PRODUCT_TEARDOWN.md), [`GEOSPATIAL_STACK_EVALUATION.md`](../research/GEOSPATIAL_STACK_EVALUATION.md), [`MIRA_BHAYANDAR_DATA_SOURCE_REGISTER.md`](../research/MIRA_BHAYANDAR_DATA_SOURCE_REGISTER.md), [`MAP_EXPLORER_DESIGN_SPEC.md`](../design/MAP_EXPLORER_DESIGN_SPEC.md), [`GEOSPATIAL_DATA_CONTRACTS.md`](../architecture/GEOSPATIAL_DATA_CONTRACTS.md), and [`MAP_EXPLORER_TEST_PLAN.md`](../testing/MAP_EXPLORER_TEST_PLAN.md).
+  - **Next-phase gates:** before those records are eligible for map display, owner must decide whether to unpublish them pending rights/provenance verification. Before map implementation, choose map provider/budget, locality boundary source/approximation policy, attribution/language preferences and exact property location privacy. No production map provider, schema or data was changed.
+
+## Design Phase — Homepage Property Explorer + Locality Intelligence Explorer (unnumbered)
+
+**Status:** Complete. This is a UX/design/specification workstream, not application implementation and not a renumbering of Phase 1. All live property/locality rows remain untouched; no Supabase, production configuration, or app code was changed.
+
+- [x] **D.1 Product architecture and user flows:** documented sitemap, navigation, separation of conversion-oriented homepage property discovery from analytical locality intelligence, and five end-to-end flows.
+- [x] **D.2 Homepage Property Explorer:** documented desktop/mobile layouts for map/list sync, budget/BHK filters, cards, selection, loading/empty/error/no-match and existing WhatsApp enquiry.
+- [x] **D.3 Locality Intelligence Explorer:** documented desktop/mobile layout and states for requirements, three preference profiles, evidence layers/legends, locality detail/comparison, recommendations, explanations and insufficient-data behavior.
+- [x] **D.4 Shared design system and responsive/accessibility rules:** defined tokens, reusable component contracts, responsive breakpoints and accessibility conventions.
+- [x] **D.5 Recommendation UX and technical handoff:** specified profile criteria without pretending weights were owner-approved, hard eligibility rules, confidence/limitations, current schema gaps, proposed routes/components/query/data contracts and provenance requirements.
+- [x] **D.6 Visual prototypes:** created a responsive design-only HTML preview for both experiences and key states. It is static and schematic, contains no live property records or fabricated market statistics.
+- [x] **D.7 Design QA and handoff:** reviewed artifacts against the brief, updated docs/worklog, confirmed app and production data were not changed, and handed off without starting implementation. Local browser preview was blocked by browser URL policy; the inspectable HTML preview is included in the repository.
+
+Required artifacts: `docs/design/DESIGN_SYSTEM.md`, `PRODUCT_INFORMATION_ARCHITECTURE.md`, `HOMEPAGE_PROPERTY_EXPLORER.md`, `LOCALITY_INTELLIGENCE_EXPLORER.md`, `RECOMMENDATION_UX_SPEC.md`, `RESPONSIVE_AND_ACCESSIBILITY.md`, `DESIGN_QA_REPORT.md`, `DESIGN_PHASE_SUMMARY.md`, and actual visual preview artifact(s).
+
+---
+
 ## Phase 1 — authentication, roles, and staff foundation
 
 - [x] **1.1a Auth identity/role inventory:** mapped the existing staff login to Supabase email/password and checked the Auth/profile/agent role boundaries. `auth.users.id` is the identity key; `profiles.role` is self-updatable and cannot authorize staff; trusted `app_metadata.role` is the current PREM staff gate. See [`bidmetric-supabase-audit.md`](bidmetric-supabase-audit.md).
@@ -73,12 +94,21 @@
 ## Phase 3 — public property search and maps
 
 - [ ] **3.1 Dynamic property pages:** public detail route is dynamic and published-only. Replace/archive the unused demo detail component and add image storage only after owner media is supplied.
-- [ ] **3.2 Search query:** published-property search and locality/transaction/type/price/deposit/BHK/area/furnishing filters exist; verify with approved rows.
-- [ ] **3.3 Map view:** choose Mapbox/Google/other provider, configure a restricted token, plot listings, and support marker/list interaction.
+- [ ] **3.2 Search query:** published-property search and locality/transaction/type/price/deposit/BHK/area/furnishing filters exist; verify with owner-authorized PREM-approved rows only. Current 32 MagicBricks-attributed published rows are rights/provenance-unverified and have no geospatial locations; see the map recovery audit.
+- [ ] **3.3 Map view:** choose a renderer and a separately approved tile/data provider; document license, attribution, cache/retention, quota, price, SLA and lock-in before credentials or commercial use. Plot only approved, location-authorized listings; support marker/list interaction.
 - [ ] **3.4 Transaction-specific values:** confirm sale/rent/lease units and displayed price semantics; schema currently uses `price` plus optional `deposit`.
 - [ ] **3.5 Heavy-deposit handling:** a minimum-deposit filter exists; add transaction-specific UX and acceptance coverage.
 - [ ] **3.6 Contextual filters:** hide or explain inapplicable filters for sale/rent/commercial flows.
 - [ ] **3.7 Search acceptance:** verify representative owner-authorized records, correct result ordering, empty state, map/list behavior, and detail links.
+- [ ] **3.8 Map-first route and responsive UX:** build `/explore` or equivalent with desktop map/context panel, mobile map/list switch, keyboard/screen-reader alternatives, legends and recoverable empty/error states. Follow [`MAP_EXPLORER_DESIGN_SPEC.md`](../design/MAP_EXPLORER_DESIGN_SPEC.md).
+- [ ] **3.9 Renderer lifecycle and synthetic fixture:** provider-adapter boundary, safe source/layer lifecycle, coordinate/GeoJSON validation, viewport bounds and missing-token/network handling. Keep synthetic fixture isolated from production APIs/tables and visibly labelled illustrative.
+- [ ] **3.10 Independent evidence layers:** separately model sale asking price, monthly asking rent, price per carpet-area square foot, approved PREM inventory and preference fit; POI/context remains separate. Each requires explicit units, legend, filters, dates, source, freshness and data-quality/no-data state. Do not conflate asking prices and registered transactions.
+- [ ] **3.11 Sparse-data and aggregation rules:** no interpolated market surface without justified sample density; suppress sparse cells; show no verified observations where unsupported; never infer zero from missing data.
+- [ ] **3.12 Locality navigation/comparison:** support Mira Road East/West, Bhayandar East/West and Kashimira only with verified names and authoritative boundaries; otherwise label centroids/approximate service regions honestly. No unsupported growth, safety or investment score.
+- [ ] **3.13 Preferences, POIs and context:** apply hard filters before transparent soft preference weights; explain factors and missing coverage. POIs require documented rights, source, date and confidence; no invented travel times or third-party data-policy violations.
+- [ ] **3.14 Accessibility/performance/security acceptance:** keyboard-operable controls, non-map alternatives, sequential accessible color ramps, reduced motion, touch targets, mobile/GPU/network performance, bounded public payloads, and no PII/private fields in map output.
+- [ ] **3.15 Map verification and approval gate:** test layer toggles, filters, zoom, empty/sparse/token/network/invalid-GeoJSON states, route deep links, mobile/desktop, console/network errors, lint, tests and production build; capture rendered-state evidence. Present rights/cost/provider and UX decisions; no production data/provider/DB integration without owner approval.
+- [ ] **3.16 Documentation:** maintain the research, design, architecture/data contract, QA plan, README and [`MAP_HEATMAP_RECOVERY_AUDIT.md`](MAP_HEATMAP_RECOVERY_AUDIT.md); do not duplicate these documents as generic DESIGN/DECISIONS/spec files.
 
 ## Phase 4 — locality intelligence
 

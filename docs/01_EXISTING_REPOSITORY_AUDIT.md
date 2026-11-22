@@ -1,6 +1,6 @@
 # Existing repository audit
 
-This records the original PremHousing app and its original Supabase baseline. The owner later selected BidMetric Supabase for PREM; use [`docs/implementation/bidmetric-supabase-audit.md`](implementation/bidmetric-supabase-audit.md) as the current backend reference.
+This records the original PremHousing app and its original Supabase baseline; several statements below are historical snapshots. The active PREM backend is the `PremHousing` project (`swrhmpnjyvnascpqdjir`), and BidMetric is inactive. See [`docs/implementation/MAP_HEATMAP_RECOVERY_AUDIT.md`](implementation/MAP_HEATMAP_RECOVERY_AUDIT.md) for current map/inventory evidence and [`docs/implementation/bidmetric-supabase-audit.md`](implementation/bidmetric-supabase-audit.md) for the historical consolidation decision.
 
 ## Scope and snapshot
 
@@ -14,7 +14,7 @@ This records the original PremHousing app and its original Supabase baseline. Th
 - Public search is backed by Supabase and only returns `published` properties. Filters include locality, sale/rent/commercial, price ceiling, deposit floor, BHK, area, and furnishing.
 - The property detail route reads a single published row and offers a WhatsApp message prefilled with the property title.
 - The admin route uses Supabase email/password auth and trusted `app_metadata.role` claims. It supports locality creation, property draft/edit, publishing after a verification checkbox, and admin-only deletion.
-- The database currently has `localities`, `properties`, and `leads`, with RLS enabled. Inventory is empty. Admin workflows have not been exercised with a real authorized user.
+- At the original audit snapshot, `localities`, `properties`, and `leads` existed with RLS enabled and inventory was empty. A later aggregate-only inspection found 32 published MagicBricks-attributed property rows and 7 localities; source rights/provenance are unverified, and the rows are not cleared for PREM map/intelligence use. See the dated map recovery audit. Admin workflows have not been exercised with a real authorized user.
 - The public enquiry form still launches WhatsApp; there is no lead persistence or explicit consent checkbox. The database has no public lead-insert policy.
 - `robots.txt` and `sitemap.xml` exist, but the app is a Vite SPA. Property metadata is set client-side; per-property SSR/SSG and structured data are not implemented.
 
@@ -24,7 +24,7 @@ This records the original PremHousing app and its original Supabase baseline. Th
 |---|---|---|
 | `src/main.jsx`, `src/App.jsx` | Active React Router and public landing/search | **Keep and refactor** as dynamic search and content grow. |
 | `src/lib/supabase.js`, current schema | Publishable-key browser client; RLS tables for localities, properties, leads | **Keep**. Add isolated broker/auth tables only after scope and role model are approved. |
-| `PropertyResults.jsx`, `PropertyDetailPage.jsx` | Active, Supabase-backed; no records available to test with | **Keep and verify** after owner-authorized inventory is entered. |
+| `PropertyResults.jsx`, `PropertyDetailPage.jsx` | Active, Supabase-backed; at the original audit there were no records. Later 32 published rows were found, but their MagicBricks source rights/provenance are unverified. | **Keep and verify** using owner-authorized, PREM-approved inventory only. |
 | `AdminDashboard.jsx` | Active staff-only property workflow | **Keep and extend** with moderation, broker records, and CRM after human scope choices. |
 | `src/constants/listings.js`, `FeaturedProperties.jsx`, old `PropertyDetail.jsx` | Fake listing claims and Rickroll placeholder video; none was routed | **Removed in Phase 0.2**. No demo records were migrated to Supabase. |
 | `Hero.jsx`, `Services.jsx`, `Contact.jsx`, `About.jsx`, `Navbar.jsx`, `Footer.jsx`, `BookingModal.jsx` | Legacy components not imported by active route entry points; Contact simulated submission and map were placeholders | **Removed in Phase 0.2** with their component CSS. Active `App.jsx` content remains. |
