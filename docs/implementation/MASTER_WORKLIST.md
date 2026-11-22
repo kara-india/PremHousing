@@ -24,7 +24,8 @@
 
 ## Phase 1 — authentication, roles, and staff foundation
 
-- [ ] **1.1 Auth provider setup:** reconcile BidMetric `profiles.role`, agents, and Supabase Auth identities before choosing/updating email/password, Phone OTP, and/or Google OAuth. Phone/SMS and Google provider credentials are not configured.
+- [x] **1.1a Auth identity/role inventory:** mapped the existing staff login to Supabase email/password and checked the Auth/profile/agent role boundaries. `auth.users.id` is the identity key; `profiles.role` is self-updatable and cannot authorize staff; trusted `app_metadata.role` is the current PREM staff gate. See [`bidmetric-supabase-audit.md`](bidmetric-supabase-audit.md).
+- [ ] **1.1b Provider/audience decision:** recommended MVP is email/password for staff only, no public signup, and anonymous public browsing; defer customer/broker sign-in, Phone OTP, and Google until launch needs and provider setup are confirmed. Auth provider toggles could not be inspected through the connected Supabase tools; verify them in the Dashboard before changing auth settings.
 - [ ] **1.2 Login UI:** email/password staff login exists; implement/verify any selected OTP or OAuth flows and provide recovery UX.
 - [ ] **1.3 Role provisioning:** PREM currently checks trusted `app_metadata.role`; BidMetric's `profiles.role` has buyer/seller/partner values and is self-updatable. Keep privileged roles on a trusted server-managed path; define staff/broker access after the isolated RLS migration is verified.
 - [ ] **1.4 Session/role context:** move role/session handling to a shared auth context/hook if the staff/broker/public surfaces require it.
@@ -136,3 +137,4 @@ Detailed design and acceptance criteria: [`forecasting-feedback-plan.md`](foreca
 - [ ] Decide whether broker onboarding and the Golden Profile promotion belong in the first release or a later stage.
 - [ ] Approve initial localities, listing/data sources, broker vetting criteria, promotion duration/terms, auth methods, AI languages/provider, WhatsApp model, and marketing IDs.
 - [ ] Confirm PREM's first forecast geography, property/transaction segments, target units, and whether a forecast is useful to customers or only internal teams; exact market scope materially changes data feasibility.
+- [ ] Confirm the launch audience and auth methods: staff-only email/password (recommended for the current app), or customer/broker accounts and additional sign-in methods.

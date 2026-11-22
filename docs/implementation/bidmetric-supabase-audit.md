@@ -34,6 +34,17 @@ The current PREM/Vite app is **not schema-compatible yet**. It requests a `local
 - The public active-listing policy on `properties` applies to rows, not columns. Current anon SELECT grants include owner/contact, commission, and valuation fields; a public projection/view or column-level restrictions are needed before connecting the public PREM UI.
 - `agent_listings` has a public active-listing read policy and an insert policy using `auth.uid() = agent_id`, although `agent_id` is an FK to `agents.id`; validate the intended ownership relationship before reuse.
 
+### Phase 1.1 auth decision record
+
+- **Identity source:** keep Supabase Auth `auth.users.id` as the canonical identity. `profiles.id` is the one-to-one profile key; `agents.owner_id` refers to the Auth user. Do not create a second PREM password/identity store.
+- **Role boundary:** retain trusted server-managed `app_metadata.role` for PREM staff/admin authorization while the current UI uses it. Set these claims only through a trusted Admin API/server path. Never authorize from client-editable `user_metadata`. Do not use BidMetric's `profiles.role` for staff, admin, or broker authorization: its current enum is only `buyer`, `rera_seller`, `channel_partner`, and authenticated clients have UPDATE privilege on the role column.
+- **Provider recommendation:** the current `/admin` UI implements email/password sign-in and has no public account signup. For the present MVP, use staff-only email/password with invite/provisioning handled out of band; keep public browsing anonymous. Defer Phone OTP and Google OAuth until PREM confirms a customer/broker account requirement and supplies the SMS/OAuth provider configuration and approved redirect domains. This is a recommendation, not a provider setting change.
+- **Connector limitation:** the connected Supabase tools expose project/database operations but not the Auth provider toggle settings. Current active provider settings were not verified in this task. Confirm them in Supabase Dashboard before changing Auth configuration. Phone/SMS credentials and Google OAuth credentials were not provided in the project context.
+- **Broker boundary:** when broker accounts are approved, map each Auth user to broker organization/membership records and keep verification, organization status, and staff privileges server-managed. `agents` is not a trusted role source; its current `owner_id` mapping and update policy need repair before reuse.
+- **Owner decision pending:** confirm whether launch remains staff-only or includes customer/broker accounts; this determines whether to add OTP/OAuth and changes signup, recovery, onboarding, and RLS scope.
+
+Official Supabase references: [Auth users and identities](https://supabase.com/docs/guides/auth/users), [redirect URL configuration](https://supabase.com/docs/guides/auth/redirect-urls), and [custom claims/RBAC](https://supabase.com/docs/guides/api/custom-claims-and-role-based-access-control-rbac).
+
 Prediction-related data structures exist: `properties` includes valuation/market/comparable prices, confidence interval, bounds, last-updated time, and factor fields; `market_trends` stores location, property type, date, average price per square foot, and transaction count. Their provenance, history depth, quality, coverage, and authorization have not been assessed. These fields are candidates for PREM's future prediction experience, not evidence that reliable predictions can be launched now.
 
 ## Security findings requiring review before public app use
