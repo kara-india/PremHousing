@@ -1,5 +1,5 @@
 import { lazy, Suspense } from 'react';
-import { Route, Routes } from 'react-router-dom';
+import { Link, Route, Routes } from 'react-router-dom';
 import App from './App.jsx';
 import RequireAuth from './lib/auth/RequireAuth.jsx';
 
@@ -8,6 +8,12 @@ const PropertyDetailPage = lazy(() => import('./components/sections/PropertyDeta
 const AuthPage = lazy(() => import('./components/sections/AuthPage.jsx'));
 const OnboardingPage = lazy(() => import('./components/sections/OnboardingPage.jsx'));
 const LocalityInsightsPage = lazy(() => import('./components/sections/LocalityInsightsPage.jsx'));
+const BrokerListingsPage = lazy(() => import('./components/sections/BrokerListingsPage.jsx'));
+const phase2ReviewEnabled = import.meta.env.VITE_ENABLE_PHASE2_REVIEW === 'true';
+
+function Phase2Unavailable() {
+  return <main className="auth-shell"><section className="auth-card"><p className="auth-eyebrow">BROKER LISTINGS</p><h1>Workspace not enabled</h1><p className="auth-subtitle">PREM is preparing the broker listing workspace for this deployment.</p><Link className="auth-back" to="/account">Back to your account</Link></section></main>;
+}
 
 function AppRoutes() {
   return (
@@ -16,6 +22,7 @@ function AppRoutes() {
         <Route path="/" element={<App />} />
         <Route path="/insights" element={<LocalityInsightsPage />} />
         <Route path="/admin" element={<RequireAuth staffOnly><AdminDashboard /></RequireAuth>} />
+        <Route path="/broker/listings" element={phase2ReviewEnabled ? <RequireAuth><BrokerListingsPage /></RequireAuth> : <Phase2Unavailable />} />
         <Route path="/properties/:propertyId" element={<PropertyDetailPage />} />
         <Route path="/auth" element={<AuthPage />} />
         <Route path="/auth/callback" element={<AuthPage />} />

@@ -13,16 +13,19 @@ import { SiteFooter, SiteHeader } from './components/SiteChrome.jsx';
 import { LOCALITY_NAMES } from './lib/localities.js';
 
 const LocalityInsightsExplorer = lazy(() => import('./components/sections/LocalityInsightsPage.jsx').then((module) => ({ default: module.LocalityInsightsExplorer })));
+const phase2ReviewEnabled = import.meta.env.VITE_ENABLE_PHASE2_REVIEW === 'true';
 
 async function searchPublishedProperties(filters) {
   if (!supabase) throw new Error('Property search is not configured.');
   const commercialTypes = ['Shop', 'Office', 'Commercial unit'];
   let query = supabase
     .from('properties')
-    .select('id,title,property_type,transaction_type,price,deposit,area_sqft,bedrooms,furnishing,description,features,image_urls,locality:localities!inner(name)', { count: 'exact' })
-    .eq('status', 'published')
-    .order('price', { ascending: true })
-    .limit(1000);
+    .select(phase2ReviewEnabled
+      ? 'id,title,property_type,transaction_type,price,deposit,area_sqft,bedrooms,furnishing,description,features,image_urls,is_featured,locality:localities!inner(name)'
+      : 'id,title,property_type,transaction_type,price,deposit,area_sqft,bedrooms,furnishing,description,features,image_urls,locality:localities!inner(name)', { count: 'exact' })
+    .eq('status', 'published');
+  if (phase2ReviewEnabled) query = query.order('is_featured', { ascending: false });
+  query = query.order('price', { ascending: true }).limit(1000);
 
   if (filters.transaction === 'Buy') query = query.eq('transaction_type', 'sale');
   if (filters.transaction === 'Rent') query = query.eq('transaction_type', 'rent');

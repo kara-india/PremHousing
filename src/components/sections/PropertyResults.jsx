@@ -25,9 +25,12 @@ function PropertyCard({ property, onEnquire }) {
         : <span>Photos available on request</span>}
     </div>
     <div className="property-result-body">
-      <span className="property-result-kind">
-        {property.property_type === 'commercial' ? 'Commercial' : property.transaction_type === 'sale' ? 'For sale' : 'For rent'}
-      </span>
+      <div className="property-result-badges">
+        <span className="property-result-kind">
+          {property.property_type === 'commercial' ? 'Commercial' : property.transaction_type === 'sale' ? 'For sale' : 'For rent'}
+        </span>
+        {property.is_featured && <span className="property-result-featured">PREM featured</span>}
+      </div>
       <h3>{property.title}</h3>
       <p className="property-result-location"><MapPin size={14} /> {property.locality?.name}</p>
       <strong className="property-result-price">{formatPrice(property)}</strong>

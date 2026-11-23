@@ -4,6 +4,8 @@ import { Link } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../lib/auth/useAuth.js';
 import BrokerAccessPanel from './BrokerAccessPanel.jsx';
+import LeadsPanel from './LeadsPanel.jsx';
+import ListingModerationPanel from './ListingModerationPanel.jsx';
 import './AdminDashboard.css';
 
 const emptyForm = {
@@ -26,9 +28,15 @@ const emptyForm = {
   source_url: '',
   features: '',
   image_urls: '',
+  is_featured: false,
   publish: false,
   verifyNow: false,
 };
+
+const phase2ReviewEnabled = import.meta.env.VITE_ENABLE_PHASE2_REVIEW === 'true';
+const propertyFields = phase2ReviewEnabled
+  ? 'id,title,status,review_status,rejection_reason,is_featured,submitted_by,price,transaction_type,property_type,locality_id,address,deposit,area_sqft,bedrooms,bathrooms,furnishing,description,builder,property_age_years,gated,source_name,source_url,features,image_urls,verified_at,published_at,created_at,locality:localities(name)'
+  : 'id,title,status,price,transaction_type,property_type,locality_id,address,deposit,area_sqft,bedrooms,bathrooms,furnishing,description,builder,property_age_years,gated,source_name,source_url,features,image_urls,verified_at,published_at,created_at,locality:localities(name)';
 
 function slugify(value) {
   return value.toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
@@ -62,7 +70,7 @@ function AdminDashboard() {
       setErrorMessage('');
       const [localityResult, propertyResult] = await Promise.all([
         supabase.from('localities').select('id,name').order('name'),
-        supabase.from('properties').select('id,title,status,price,transaction_type,property_type,locality_id,address,deposit,area_sqft,bedrooms,bathrooms,furnishing,description,builder,property_age_years,gated,source_name,source_url,features,image_urls,verified_at,published_at,created_at,locality:localities(name)').order('created_at', { ascending: false }).limit(100),
+        supabase.from('properties').select(propertyFields).order('created_at', { ascending: false }).limit(100),
       ]);
       if (!active) return;
       if (localityResult.error || propertyResult.error) {
@@ -70,7 +78,7 @@ function AdminDashboard() {
         return;
       }
       setLocalities(localityResult.data ?? []);
-      setProperties(propertyResult.data ?? []);
+      setProperties((propertyResult.data ?? []).map((property) => ({ ...property, review_status: property.review_status ?? 'not_required', rejection_reason: property.rejection_reason ?? null, is_featured: property.is_featured ?? false })));
       if (localityResult.data?.[0]) {
         setForm((current) => current.locality_id ? current : { ...current, locality_id: localityResult.data[0].id });
       }
@@ -141,6 +149,7 @@ function AdminDashboard() {
       source_url: property.source_url ?? '',
       features: (property.features ?? []).join('\n'),
       image_urls: (property.image_urls ?? []).join('\n'),
+      is_featured: property.is_featured ?? false,
       publish: property.status === 'published',
       verifyNow: false,
     });
@@ -197,6 +206,7 @@ function AdminDashboard() {
       published_at: form.publish ? now : null,
       updated_at: now,
     };
+    if (phase2ReviewEnabled) payload.is_featured = form.is_featured;
 
     const request = editingId
       ? supabase.from('properties').update(payload).eq('id', editingId).select('id').maybeSingle()
@@ -261,6 +271,8 @@ function AdminDashboard() {
           {(errorMessage || notice) && <p className={errorMessage ? 'admin-banner admin-banner-error' : 'admin-banner'} role={errorMessage ? 'alert' : 'status'}>{errorMessage || notice}</p>}
 
           {import.meta.env.VITE_ENABLE_BROKER_ORGANIZATIONS === 'true' && <BrokerAccessPanel role={role} />}
+          {phase2ReviewEnabled && <ListingModerationPanel properties={properties} reviewerId={session.user.id} onReviewed={() => setRefreshKey((current) => current + 1)} />}
+          {phase2ReviewEnabled && <LeadsPanel />}
 
           <section className="admin-panel" id="admin-property-form">
             <div className="admin-panel-heading"><div><span className="eyebrow">{editingId ? 'EDIT LISTING' : 'ADD LISTING'}</span><h2>{editingId ? 'Update property details' : 'Create a property record'}</h2></div>{editingId && <button type="button" className="admin-text-button" onClick={resetForm}>Cancel edit</button>}</div>
@@ -289,6 +301,7 @@ function AdminDashboard() {
                 <label>Features, one per line<textarea rows={4} value={form.features} onChange={(event) => setForm({ ...form, features: event.target.value })} /></label>
                 <label>Photo URLs, one per line<textarea rows={4} value={form.image_urls} onChange={(event) => setForm({ ...form, image_urls: event.target.value })} placeholder="https://…" /></label>
                 <label className="admin-checkbox"><input type="checkbox" checked={form.gated} onChange={(event) => setForm({ ...form, gated: event.target.checked })} /> Gated community</label>
+                {phase2ReviewEnabled && <label className="admin-checkbox"><input type="checkbox" checked={form.is_featured} onChange={(event) => setForm({ ...form, is_featured: event.target.checked })} /> Feature this listing on PREM</label>}
                 <label className="admin-checkbox"><input type="checkbox" checked={form.publish} onChange={(event) => setForm({ ...form, publish: event.target.checked })} /> Publish this listing</label>
                 {form.publish && <label className="admin-checkbox admin-verify"><input type="checkbox" checked={form.verifyNow} onChange={(event) => setForm({ ...form, verifyNow: event.target.checked })} /> I verified the details and current availability with the owner or authorized agent now.</label>}
                 <div className="admin-form-actions admin-wide"><button className="button button-dark" type="submit" disabled={busy || localities.length === 0}>{busy ? 'Saving…' : <><Save size={15} /> {editingId ? 'Save changes' : 'Save property'}</>}</button></div>
@@ -302,7 +315,7 @@ function AdminDashboard() {
               <div className="admin-list">
                 {properties.map((property) => (
                   <article className="admin-list-row" key={property.id}>
-                    <div><strong>{property.title}</strong><span>{property.locality?.name} · {property.transaction_type} · ₹{Number(property.price).toLocaleString('en-IN')} · {property.status}</span></div>
+                    <div><strong>{property.title}</strong><span>{property.locality?.name} · {property.transaction_type} · ₹{Number(property.price).toLocaleString('en-IN')} · {property.status}{phase2ReviewEnabled ? ` · review: ${property.review_status}${property.rejection_reason ? ` · feedback: ${property.rejection_reason}` : ''}${property.is_featured ? ' · PREM featured' : ''}` : ''}</span></div>
                     <div className="admin-row-actions"><button type="button" onClick={() => beginEdit(property)}><Pencil size={14} /> Edit</button>{role === 'admin' && <button type="button" className="admin-delete" disabled={busy} onClick={() => handleDelete(property)}><Trash2 size={14} /> Delete</button>}</div>
                   </article>
                 ))}

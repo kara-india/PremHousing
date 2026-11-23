@@ -14,6 +14,7 @@ function OnboardingPage() {
   const trustedRole = session?.user?.app_metadata?.role;
   const metadataName = session?.user?.user_metadata?.full_name;
   const brokerOrganizationsEnabled = import.meta.env.VITE_ENABLE_BROKER_ORGANIZATIONS === 'true';
+  const phase2ReviewEnabled = import.meta.env.VITE_ENABLE_PHASE2_REVIEW === 'true';
   const [account, setAccount] = useState(null);
   const [brokerOrganization, setBrokerOrganization] = useState(null);
   const [accountType, setAccountType] = useState('');
@@ -190,6 +191,7 @@ function OnboardingPage() {
           <label className={accountType === 'broker' ? 'selected' : ''}><input type="radio" name="account-type" value="broker" checked={accountType === 'broker'} onChange={(event) => setAccountType(event.target.value)} /><span><strong>Broker</strong><small>Submit listings for PREM review and publication.</small></span></label>
         </fieldset>}
         {account && <p className="auth-account-type">Account type <strong>{account.account_type === 'broker' ? 'Broker' : 'Customer'}</strong></p>}
+        {account?.account_type === 'broker' && phase2ReviewEnabled && <Link className="auth-primary auth-as-link" to="/broker/listings">Open broker listings <ArrowRight size={16} /></Link>}
         {account?.account_type === 'broker' && brokerOrganizationsEnabled && <>
           <p className="auth-notice">Broker listing access is enabled after PREM staff reviews and approves your organization.</p>
           {brokerOrganization ? <p className="auth-account-type">Brokerage <strong>{brokerOrganization.name}</strong> · Review status <strong>{brokerOrganization.review_status}</strong></p> : <form className="auth-broker-registration" onSubmit={registerBrokerOrganization}>

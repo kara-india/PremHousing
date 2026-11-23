@@ -1,0 +1,56 @@
+.broker-listings-shell{min-height:100vh;background:#f3f1ea;color:#27342d}
+.broker-listings-header{height:64px;display:flex;align-items:center;justify-content:space-between;padding:0 max(22px,calc((100vw - 1080px)/2));background:#fffefa;border-bottom:1px solid #dedbd1}
+.broker-listings-brand{color:#26382f;font-size:14px;font-weight:700;letter-spacing:.2em;text-decoration:none}
+.broker-listings-brand span{color:#b18b55}
+.broker-listings-signout,.broker-listings-back,.broker-listing-edit,.broker-listing-cancel{display:inline-flex;align-items:center;gap:7px;color:#566057;font:inherit;font-size:11px;text-decoration:none}
+.broker-listings-signout{border:0;background:transparent;cursor:pointer}
+.broker-listings-signout:hover,.broker-listings-back:hover,.broker-listing-edit:hover,.broker-listing-cancel:hover{color:#8d6b3d}
+.broker-listings-main{width:min(100% - 36px,1080px);margin:0 auto;padding:24px 0 56px}
+.broker-listings-back{margin-bottom:24px}
+.broker-listings-title{margin-bottom:22px}
+.broker-listings-title .eyebrow,.broker-listings-panel .eyebrow{color:#9a7b4d;font-size:9px;letter-spacing:.16em}
+.broker-listings-title h1{margin:8px 0 9px;color:#252b25;font:500 clamp(34px,5vw,48px)/1.06 var(--serif);letter-spacing:-.035em}
+.broker-listings-title p,.broker-listings-form-note{margin:0;color:#6a6d64;font-size:12px;line-height:1.6}
+.broker-listings-message,.broker-listings-state{margin:0 0 16px;padding:15px;border:1px solid #d4ddd5;background:#edf3ee;color:#435548;font-size:12px;line-height:1.6}
+.broker-listings-message{display:flex;align-items:flex-start;gap:8px}
+.broker-listings-message.error{border-color:#e6c7c3;background:#fbefed;color:#963f36}
+.broker-listings-state{padding:24px;background:#fffefa;border-color:#dedbd1}
+.broker-listings-state h2{margin:0 0 8px;color:#27342d;font:500 25px/1.2 var(--serif)}
+.broker-listings-state p{max-width:600px;margin:0 0 16px;color:#6a6d64;font-size:12px;line-height:1.65}
+.broker-membership-state{display:inline-block;margin-bottom:12px;padding:5px 8px;border:1px solid #dedbd1;color:#74766d;font-size:9px;text-transform:uppercase;letter-spacing:.1em}
+.broker-membership-state.pending{border-color:#e7d4ab;background:#fbf4e6;color:#806333}
+.broker-membership-state.rejected,.broker-membership-state.suspended{border-color:#e4c2bd;background:#fbefed;color:#963f36}
+.broker-listings-button{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:42px;padding:0 15px;border:0;background:#26382f;color:#fff;font:inherit;font-size:11px;font-weight:600;text-decoration:none;cursor:pointer}
+.broker-listings-button:hover{background:#344c3f}
+.broker-listings-button:disabled{opacity:.55;cursor:not-allowed}
+.broker-listings-button:focus-visible,.broker-listings-back:focus-visible,.broker-listings-signout:focus-visible,.broker-listing-edit:focus-visible,.broker-listing-cancel:focus-visible{outline:2px solid #9a7b4d;outline-offset:3px}
+.broker-listings-org{display:grid;gap:6px;max-width:360px;margin:0 0 14px;color:#64675e;font-size:10px;font-weight:600}
+.broker-listings-org select,.broker-listings-form input,.broker-listings-form select{width:100%;height:42px;padding:0 10px;border:1px solid #dcd9d0;background:#fffefa;color:#30352f;font:inherit;font-size:11px}
+.broker-listings-panel{margin-top:14px;padding:20px;border:1px solid #dedbd1;background:#fffefa}
+.broker-listings-panel-heading{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:14px}
+.broker-listings-panel-heading h2{margin:5px 0 0;color:#26382f;font:500 25px/1.18 var(--serif)}
+.broker-listings-panel-heading>span{color:#74766d;font-size:10px}
+.broker-listings-empty{margin:0;padding:16px;background:#f5f3ed;color:#696b62;font-size:11px;line-height:1.6}
+.broker-listings-list{display:grid;gap:9px}
+.broker-listing-card{padding:14px;border:1px solid #e2dfd5;background:#fff}
+.broker-listing-card-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
+.broker-listing-locality{color:#8a704a;font-size:9px;text-transform:capitalize}
+.broker-listing-card h3{margin:5px 0 0;color:#30372f;font:500 18px/1.3 var(--serif)}
+.broker-listing-badges{display:flex;flex-wrap:wrap;justify-content:flex-end;gap:5px}
+.broker-listing-badge{padding:5px 7px;border:1px solid #dedbd1;color:#64675e;font-size:8px;text-transform:capitalize;white-space:nowrap}
+.broker-listing-badge.published,.broker-listing-badge.review-approved{border-color:#cbd9ce;background:#eef4ef;color:#36513f}
+.broker-listing-badge.review-pending{border-color:#ead8b0;background:#fbf5e9;color:#806333}
+.broker-listing-badge.review-rejected{border-color:#e6c7c3;background:#fbefed;color:#963f36}
+.broker-listing-facts{margin:8px 0 0;color:#6d7067;font-size:10px;line-height:1.5;text-transform:capitalize}
+.broker-listing-rejection{display:grid;gap:5px;margin:11px 0 0;padding:10px;border-left:2px solid #ae6358;background:#fbefed;color:#713e38;font-size:10px;line-height:1.55}
+.broker-listing-rejection strong{font-size:9px;text-transform:uppercase;letter-spacing:.08em}
+.broker-listing-review-note{margin:10px 0 0;color:#73756d;font-size:10px;line-height:1.5}
+.broker-listing-edit,.broker-listing-cancel{margin-top:11px;padding:8px 10px;border:1px solid #d9d6cb;background:#fffefa;color:#435448;font-size:10px;cursor:pointer}
+.broker-listings-form-note{margin:-4px 0 14px;font-size:10px}
+.broker-listings-form{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:11px 13px}
+.broker-listings-form label{display:grid;gap:6px;color:#61645b;font-size:10px;font-weight:600}
+.broker-listings-form .broker-form-wide{grid-column:1/-1}
+.broker-listings-form input:focus,.broker-listings-form select:focus,.broker-listings-org select:focus{outline:2px solid #9a7b4d;outline-offset:1px;border-color:#9a7b4d}
+.broker-listings-actions{display:flex;align-items:center;gap:12px;margin-top:4px}
+.broker-listings-actions span{color:#74766d;font-size:9px}
+@media(max-width:620px){.broker-listings-header{height:58px;padding:0 16px}.broker-listings-main{width:min(100% - 28px,1080px);padding-top:17px}.broker-listings-back{margin-bottom:19px}.broker-listings-panel{padding:14px}.broker-listings-panel-heading h2{font-size:22px}.broker-listing-card-head{display:grid}.broker-listing-badges{justify-content:flex-start}.broker-listings-form{grid-template-columns:1fr}.broker-listings-form .broker-form-wide{grid-column:auto}.broker-listings-actions{align-items:flex-start;flex-direction:column}.broker-listings-actions span{line-height:1.5}}
