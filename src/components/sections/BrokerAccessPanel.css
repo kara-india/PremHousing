@@ -1,0 +1,18 @@
+.broker-access-panel{display:grid;gap:18px}
+.broker-panel-count{display:inline-flex;align-items:center;gap:6px;padding:8px 10px;background:#f5f1e8;color:#76603f;font-size:10px}
+.broker-panel-message{display:flex;align-items:center;gap:8px;margin:0;padding:10px 12px;background:#edf3eb;color:#405944;font-size:11px}
+.broker-panel-error{background:#f9eae7;color:#8a352c}
+.broker-staff-access{display:grid;gap:8px;padding:14px;border:1px solid #e7e3d9;background:#fbfaf7}.broker-staff-access>strong{font:500 17px var(--serif);color:#30372f}.broker-staff-access p{margin:0;color:#77796f;font-size:10px}.broker-staff-access>div{display:grid;grid-template-columns:1fr 1fr;gap:8px}.broker-staff-access input{min-width:0;min-height:38px;padding:0 10px;border:1px solid #deddd4;background:#fff;font:400 11px var(--head)}.broker-staff-access button{min-height:36px;padding:0 11px;border:1px solid #294b39;background:#294b39;color:white;font-size:10px;font-weight:700;cursor:pointer}.broker-staff-access button.broker-reject{border-color:#e5d8d5;background:#fff;color:#8a352c}.broker-staff-access button:disabled{opacity:.5;cursor:not-allowed}
+.broker-application-list,.broker-activity-list{display:grid;gap:9px}
+.broker-application{padding:15px;border:1px solid #e7e3d9;background:#fff}
+.broker-application-heading{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
+.broker-application-heading>div{display:grid;gap:5px}.broker-application-heading strong{color:#30372f;font:500 17px var(--serif)}.broker-application-heading span,.broker-application>p{color:#77796f;font-size:10px}
+.broker-application>p{margin:9px 0 0}
+.broker-application>p.broker-verification-note{color:#7b6136}
+.broker-status{padding:5px 8px;border:1px solid #e8e0d0;text-transform:capitalize}.broker-status-approved{color:#3c6748;background:#edf3eb}.broker-status-rejected,.broker-status-suspended{color:#8a352c;background:#f9eae7}.broker-status-pending{color:#80663c;background:#fbf4e5}
+.broker-review-actions{display:grid;grid-template-columns:minmax(140px,1fr) auto auto;gap:8px;margin-top:14px}
+.broker-review-actions input{min-width:0;min-height:38px;padding:0 10px;border:1px solid #deddd4;background:#fbfaf7;font:400 11px var(--head)}
+.broker-review-actions button{display:inline-flex;align-items:center;justify-content:center;gap:5px;min-height:38px;padding:0 11px;border:1px solid #294b39;background:#294b39;color:#fff;font-size:10px;font-weight:700;cursor:pointer}.broker-review-actions button.broker-reject{border-color:#e5d8d5;background:#fff;color:#8a352c}.broker-review-actions button:disabled{opacity:.5;cursor:not-allowed}
+.broker-activity-heading{display:flex;align-items:baseline;justify-content:space-between;padding-top:5px;border-top:1px solid #e9e5dc}.broker-activity-heading h3{margin:10px 0 0;color:#30372f;font:500 18px var(--serif)}.broker-activity-heading span{color:#89897f;font-size:9px}
+.broker-activity-list article{display:grid;grid-template-columns:1fr 1.4fr auto;gap:10px;padding:10px;border-bottom:1px solid #efede7;font-size:10px}.broker-activity-list article span:first-child{text-transform:capitalize;color:#343d34}.broker-activity-list article span:nth-child(2),.broker-activity-list time{color:#77796f}
+@media(max-width:620px){.broker-review-actions{grid-template-columns:1fr 1fr}.broker-review-actions input{grid-column:1/-1}.broker-activity-list article{grid-template-columns:1fr auto}.broker-activity-list article span:nth-child(2){grid-row:2;grid-column:1/-1}.broker-activity-list time{grid-column:2;grid-row:1;font-size:9px}}

@@ -3,6 +3,8 @@ import { supabase } from '../supabase';
 import { AuthContext } from './AuthContext';
 import { getTrustedStaffRole } from '../authUtils';
 
+const SESSION_INIT_TIMEOUT_MS = 10000;
+
 function AuthProvider({ children }) {
   const [session, setSession] = useState(null);
   const [loading, setLoading] = useState(Boolean(supabase));
@@ -11,26 +13,37 @@ function AuthProvider({ children }) {
     if (!supabase) return undefined;
     let active = true;
     let receivedAuthEvent = false;
+    const timeoutId = window.setTimeout(() => {
+      if (active && !receivedAuthEvent) {
+        setSession(null);
+        setLoading(false);
+      }
+    }, SESSION_INIT_TIMEOUT_MS);
+    const finishLoading = () => {
+      window.clearTimeout(timeoutId);
+      setLoading(false);
+    };
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, nextSession) => {
       receivedAuthEvent = true;
       if (!active) return;
       setSession(nextSession);
-      setLoading(false);
+      finishLoading();
     });
 
     supabase.auth.getSession().then(({ data, error }) => {
       if (!active || receivedAuthEvent) return;
       setSession(error ? null : data.session);
-      setLoading(false);
+      finishLoading();
     }).catch(() => {
       if (active && !receivedAuthEvent) {
         setSession(null);
-        setLoading(false);
+        finishLoading();
       }
     });
 
     return () => {
       active = false;
+      window.clearTimeout(timeoutId);
       subscription.unsubscribe();
     };
   }, []);

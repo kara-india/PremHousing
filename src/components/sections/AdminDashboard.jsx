@@ -3,6 +3,7 @@ import { ArrowLeft, LogOut, Pencil, Plus, Save, Trash2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../lib/auth/useAuth.js';
+import BrokerAccessPanel from './BrokerAccessPanel.jsx';
 import './AdminDashboard.css';
 
 const emptyForm = {
@@ -42,7 +43,7 @@ function splitLines(value) {
 }
 
 function AdminDashboard() {
-  const { session, loading: authReady, role, isStaff, signOut } = useAuth();
+  const { session, loading: authLoading, role, isStaff, signOut } = useAuth();
   const [localities, setLocalities] = useState([]);
   const [newLocalityName, setNewLocalityName] = useState('');
   const [properties, setProperties] = useState([]);
@@ -234,8 +235,8 @@ function AdminDashboard() {
       </header>
 
       {!supabase && <section className="admin-message"><h1>Admin setup needed</h1><p>Set the Vite Supabase URL and publishable key in the local environment before signing in.</p></section>}
-      {supabase && !authReady && <section className="admin-message" aria-live="polite">Checking sign-in…</section>}
-      {supabase && authReady && !session && (
+      {supabase && authLoading && <section className="admin-message" aria-live="polite">Checking sign-in…</section>}
+      {supabase && !authLoading && !session && (
         <section className="admin-login">
           <span className="eyebrow">STAFF ACCESS</span>
           <h1>Sign in to manage listings</h1>
@@ -243,14 +244,14 @@ function AdminDashboard() {
           <Link className="button button-dark" to="/auth?next=%2Fadmin">Continue to staff sign-in</Link>
         </section>
       )}
-      {supabase && authReady && session && !isStaff && (
+      {supabase && !authLoading && session && !isStaff && (
         <section className="admin-message">
           <h1>Staff role required</h1>
           <p>This account is signed in but does not have a trusted `app_metadata.role` of `staff` or `admin`.</p>
           <button className="button button-dark" type="button" onClick={handleSignOut}>Sign out <LogOut size={15} /></button>
         </section>
       )}
-      {supabase && authReady && session && isStaff && (
+      {supabase && !authLoading && session && isStaff && (
         <div className="admin-content">
           <div className="admin-title-row">
             <div><span className="eyebrow">LISTING MANAGEMENT</span><h1>Property admin</h1><p>Signed in as {session.user.email} · {role}</p></div>
@@ -258,6 +259,8 @@ function AdminDashboard() {
           </div>
 
           {(errorMessage || notice) && <p className={errorMessage ? 'admin-banner admin-banner-error' : 'admin-banner'} role={errorMessage ? 'alert' : 'status'}>{errorMessage || notice}</p>}
+
+          {import.meta.env.VITE_ENABLE_BROKER_ORGANIZATIONS === 'true' && <BrokerAccessPanel role={role} />}
 
           <section className="admin-panel" id="admin-property-form">
             <div className="admin-panel-heading"><div><span className="eyebrow">{editingId ? 'EDIT LISTING' : 'ADD LISTING'}</span><h2>{editingId ? 'Update property details' : 'Create a property record'}</h2></div>{editingId && <button type="button" className="admin-text-button" onClick={resetForm}>Cancel edit</button>}</div>

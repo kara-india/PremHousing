@@ -1,12 +1,12 @@
 # PREM authentication and first-login onboarding
 
-Status: **requirements captured; frontend implementation partial; database and provider setup pending.** This document translates the owner's account and access requirements into a safe implementation plan. It is not a claim that Supabase Auth providers or the PREM account schema are production-ready.
+Status (2026-11-23): **auth/onboarding foundation and isolated Phase 1 broker/staff access slice implemented and synthetically tested; live provider setup, first-admin bootstrap, and rollout remain open.** This document translates the owner's account and access requirements into a safe implementation plan. It is not a claim that Google or phone Auth is production-ready.
 
 ## Frontend progress (2026-11-23)
 
-The app now has shared sign-in entry points at `/auth`, `/auth/callback`, `/auth/reset-password`, first-login/profile routes at `/onboarding` and `/account`, and a staff link from `/admin` that returns to the staff route after sign-in. Email/password sign-in, signup, reset email, phone OTP request/verification, Google OAuth initiation/callback handling, provider error messaging, and remembered/session-only storage are implemented. Customer/broker onboarding never offers staff; staff still routes through the trusted `app_metadata.role` guard. A missing `prem_accounts` table/policy is reported as setup pending rather than storing account type in editable Auth metadata.
+The app has shared sign-in entry points at `/auth`, `/auth/callback`, `/auth/reset-password`, first-login/profile routes at `/onboarding` and `/account`, and a staff link from `/admin` that returns to the staff route after sign-in. Email/password sign-in, signup, reset email, phone OTP request/verification, Google OAuth initiation/callback handling, provider error messaging, and remembered/session-only storage are implemented. Customer/broker onboarding never offers staff; staff still routes through the trusted `app_metadata.role` guard. The `prem_accounts` table and owner-scoped RLS are applied and synthetically tested on PremHousing. Identity linking and complete interactive provider verification remain open.
 
-`VITE_ENABLE_GOOGLE_AUTH` and `VITE_ENABLE_PHONE_AUTH` default to `false` in `.env.example`; their controls stay disabled until matching Supabase Auth provider settings, redirects, SMS sender and delivery have been configured. This current frontend does not itself configure providers or create the `prem_accounts` schema. Five focused Node tests cover same-origin redirect handling, safe error copy, and Remember me storage isolation; `npm run lint`, `npm test`, and `npm run build` pass. End-to-end Auth, OAuth, OTP, onboarding RLS and role tests remain pending.
+Owner decision: Phase 1 uses email/password only. Phone and Google choices are hidden while disabled and are deferred to a later phase; the owner does not need to configure SMS/OAuth now. A read-only Auth settings check on PremHousing found email signup enabled. The Node suite now has 11 passing tests. Six versioned Phase 1 migrations and the synthetic broker/staff/admin RLS matrix pass on isolated project `wnmmxgnhpojllspcdgds`. `manage-prem-access` is deployed there with JWT verification; no-auth smoke returns 401. Broker registration/review UI is implemented behind `VITE_ENABLE_BROKER_ORGANIZATIONS=false`. Email-flow verification, first-admin bootstrap, authenticated privileged function success, and authorized active-project rollout remain pending.
 
 ## Confirmed requirements
 
@@ -31,7 +31,7 @@ Detect onboarding from the absence of a PREM onboarding/account record, not a fr
 2. If no account type is recorded, prompt for `customer` or `broker`; never offer `staff` or `admin` in this public flow.
 3. Collect only quick basics required to continue (recommended: display name and preferred contact confirmation). Make optional profile fields skippable.
 4. Save `onboarding_status = incomplete` when the user skips; show a clear resume/complete-profile action later.
-5. For brokers, mark onboarding `pending_review` and require trusted staff to attach/approve an organization membership before broker listing/lead access is enabled.
+5. For brokers, mark onboarding `pending` and require trusted staff to attach/approve an organization membership before broker listing/lead access is enabled.
 6. Customers can continue to browse; private saved requirements/visits require an authenticated, owner-scoped record and appropriate consent.
 
 ## Proposed role and permission matrix

@@ -24,6 +24,7 @@ test('safeNextPath rejects external and auth-loop redirects', () => {
 
 test('auth errors give useful safe messages without exposing provider details', () => {
   assert.match(authErrorMessage({ message: 'Invalid login credentials' }), /email or password did not match/i);
+  assert.match(authErrorMessage({ message: 'Invalid API key' }), /project URL and publishable key/i);
   assert.match(authErrorMessage({ message: 'For security purposes, rate limit exceeded' }), /wait a few minutes/i);
   assert.match(authErrorMessage({ message: 'OAuth provider is not enabled' }), /not enabled for PREM/i);
   assert.equal(authErrorMessage({ message: 'https://internal.example/secret-token' }), 'We could not complete sign-in. Check your connection and try again.');

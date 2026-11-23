@@ -158,9 +158,9 @@ function AuthPage() {
         <h1>{isRecovery ? 'Choose a new password' : 'Welcome to PREM'}</h1>
         <p className="auth-subtitle">{isRecovery ? 'Create a new password for your account.' : 'Sign in to save your property journey and enquiries.'}</p>
 
-        {!isRecovery && <div className="auth-methods" role="tablist" aria-label="Choose a sign-in method">
+        {!isRecovery && phoneEnabled && <div className="auth-methods" role="tablist" aria-label="Choose a sign-in method">
           <button type="button" role="tab" aria-selected={method === 'email'} className={method === 'email' ? 'active' : ''} onClick={() => { setMethod('email'); setError(''); }}><Mail size={16} /> Email</button>
-          <button type="button" role="tab" aria-selected={method === 'phone'} className={method === 'phone' ? 'active' : ''} disabled={!phoneEnabled} onClick={() => { setMethod('phone'); setError(''); }}><Phone size={16} /> Mobile{!phoneEnabled && <span className="auth-coming-soon">Soon</span>}</button>
+          <button type="button" role="tab" aria-selected={method === 'phone'} className={method === 'phone' ? 'active' : ''} onClick={() => { setMethod('phone'); setError(''); }}><Phone size={16} /> Mobile</button>
         </div>}
 
         {isRecovery || method === 'email' ? (
@@ -186,10 +186,9 @@ function AuthPage() {
           </form>
         )}
 
-        {!isRecovery && <>
+        {!isRecovery && googleEnabled && <>
           <div className="auth-divider"><span>OR</span></div>
-          <button className="auth-google" type="button" disabled={!googleEnabled || busy} onClick={startGoogleSignIn}><span aria-hidden="true">G</span> Continue with Google {!googleEnabled && <small>Setup required</small>}</button>
-          {!googleEnabled && <p className="auth-provider-note">Google sign-in will be available after PREM’s OAuth provider and redirect URLs are configured.</p>}
+          <button className="auth-google" type="button" disabled={busy} onClick={startGoogleSignIn}><span aria-hidden="true">G</span> Continue with Google</button>
         </>}
         <p className="auth-privacy">Your login credentials are managed by Supabase Auth. PREM never stores your password in its profile data.</p>
         <Link className="auth-back" to="/"><ArrowLeft size={15} /> Back to browsing</Link>

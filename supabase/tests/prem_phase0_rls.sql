@@ -1,8 +1,8 @@
--- Run only on PremHousing test project swrhmpnjyvnascpqdjir after applying
+-- Run only on an isolated PremHousing development/test project after applying
 -- 20261122194006_prem_phase0_access_and_accounts.sql and
 -- 20261122195230_prem_phase0_policy_performance.sql.
 -- Creates only synthetic data inside a transaction and rolls everything back.
--- Do not run this script on BidMetric or any project containing user data.
+-- Do not run this script on active PremHousing, BidMetric, or any project containing user data.
 
 begin;
 

@@ -7,6 +7,7 @@ export function safeNextPath(value) {
 export function authErrorMessage(error) {
   const message = error?.message?.toLowerCase() ?? '';
   if (message.includes('invalid login credentials')) return 'That email or password did not match. Check the details and try again.';
+  if (message.includes('invalid api key') || message.includes('invalid api_key')) return 'PREM could not connect to its Supabase project. Check the project URL and publishable key configuration.';
   if (message.includes('user already registered')) return 'An account already exists for this address. Sign in instead.';
   if (message.includes('rate limit')) return 'Too many attempts. Wait a few minutes before trying again.';
   if (message.includes('provider is not enabled')) return 'This sign-in provider is not enabled for PREM yet.';
