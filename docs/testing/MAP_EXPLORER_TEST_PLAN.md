@@ -1,17 +1,25 @@
 # PREM Map Explorer QA plan
 
-**Phase:** 0 research; tests specify future acceptance and have not been run because the map feature is not implemented.
+**Phase:** Phase 3 implementation and repository acceptance completed on 2026-11-23. Broader market-layer, device-lab, analytics, licensing, and customer-launch gates remain separate from this implementation phase.
 
 **Reviewed:** 2026-11-23
 **Principle:** Test data truth and access before visual polish. A map can be visually convincing while showing unauthorized, stale, mislocated or statistically unsupported information.
 
+## Current implementation baseline
+
+The Homepage Property Explorer is embedded on `/`; Locality Intelligence appears below it and has a direct `/insights` route. Both use Mapbox GL JS and request-time Mapbox Geocoding API v6 lookups for approximate locality centres. Search and details are published-only; locality-level markers do not represent individual properties. The insights experience shows inventory context only and explicitly leaves unsupported market evidence unavailable. The owner confirmed that the 32 published rows are PREM-owned inventory. No property row, database schema, or geocoder output is to be modified for Phase 3.
+
+Phase 3 completion evidence on 2026-11-23: pure unit tests cover published-only filters and units, pagination, bounded concurrent geocoding, partial lookup failures, cancellation and Mapbox tile/auth error classification. Local desktop/mobile browser review confirmed the explorers render within the PREM site, Mapbox tiles/attribution load, and the map/list view switch and locality comparison work. Public detail projection excludes exact address. The isolated browser fixture contained 102 published rows; that is test-project inventory and not a claim about active production inventory. This implementation check is not a substitute for the broader launch matrix below.
+
 ## Preconditions / fixture contract
 
-Build synthetic fixtures only; never use real customer contacts, lead activity or staff-only fields. Include: published and unpublished listings; authorized and unauthorized ownership/roles; null and invalid coordinates; two duplicate/nearby listings; points on each viewport edge; representative localities; test-only fabricated market values with an unmistakable `SYNTHETIC` marker; an empty dataset; a stale timestamp; and a known licensed boundary/POI fixture with source metadata. Tests must assert that fixture data is not enabled in production builds or production APIs.
+Use synthetic fixtures only for automated tests; never use real customer contacts, lead activity or staff-only fields. Cover published/unpublished records, authorized and unauthorized roles, null and invalid coordinates, representative localities, empty results, missing/invalid provider configuration, and partial/network errors. Do not add fake market values, illustrative POIs, or fabricated boundaries to the live product. Test fixture data must not be enabled in production builds or APIs.
 
-Before map implementation, product/data owners must define supported roles, exact point obfuscation policy, publication semantics, how locality IDs are verified, minimum sample count for any market aggregate, acceptable freshness windows, and a manual map/list interaction model. Pending these, require no-data/unknown states and do not make market claims.
+Keep the current map contract: public published inventory and transient approximate locality centres only, with an equivalent locality/property list. Unsupported market layers, POI claims, forecast values and investment rankings remain unavailable until evidence and provenance are documented. Park unresolved owner choices; these no-data constraints are the safe default.
 
 ## QA matrix
+
+The full matrix below includes future market-data and customer-launch checks. It is not an assertion that PREM has implemented or tested those deferred product capabilities.
 
 | Area | Scenario / method | Pass condition | Severity |
 |---|---|---|---|

@@ -29,7 +29,7 @@ function PropertyDetailPage() {
       try {
         const { data, error } = await supabase
           .from('properties')
-          .select('id,title,property_type,transaction_type,price,deposit,area_sqft,bedrooms,bathrooms,furnishing,description,features,image_urls,address,verified_at,locality:localities!inner(name,city,region)')
+          .select('id,title,property_type,transaction_type,price,deposit,area_sqft,bedrooms,bathrooms,furnishing,description,features,image_urls,verified_at,locality:localities!inner(name,city,region)')
           .eq('id', propertyId)
           .eq('status', 'published')
           .maybeSingle();
@@ -99,11 +99,11 @@ function PropertyDetailPage() {
             : <span>Verified photos are available on request</span>}
         </div>
         <div className="property-detail-copy">
-          <span className="eyebrow">{property.property_type === 'commercial' ? 'COMMERCIAL PROPERTY' : property.transaction_type === 'sale' ? 'RESIDENTIAL · FOR SALE' : 'RESIDENTIAL · FOR RENT'}</span>
+          <span className="eyebrow">{property.property_type === 'commercial' ? `COMMERCIAL · ${property.transaction_type === 'sale' ? 'FOR SALE' : property.transaction_type === 'rent' ? 'FOR RENT' : 'LEASE'}` : property.transaction_type === 'sale' ? 'RESIDENTIAL · FOR SALE' : property.transaction_type === 'rent' ? 'RESIDENTIAL · FOR RENT' : 'RESIDENTIAL · LEASE'}</span>
           <h1>{property.title}</h1>
-          <p className="property-detail-location"><MapPin size={16} /> {property.address ? `${property.address}, ` : ''}{property.locality?.name}, {property.locality?.city}</p>
+          <p className="property-detail-location"><MapPin size={16} /> {property.locality?.name}, {property.locality?.city}</p>
           <strong className="property-detail-price">
-            {currency.format(property.price)}{property.transaction_type === 'rent' ? ' / month' : ''}
+            {property.transaction_type === 'lease' ? 'Lease terms confirmed on request' : `${currency.format(property.price)}${property.transaction_type === 'rent' ? ' / month' : ''}`}
           </strong>
 
           <div className="property-detail-facts">

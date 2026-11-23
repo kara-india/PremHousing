@@ -11,45 +11,27 @@ import HeroMedia from './components/HeroMedia';
 import PropertyResults from './components/sections/PropertyResults';
 import { SiteFooter, SiteHeader } from './components/SiteChrome.jsx';
 import { LOCALITY_NAMES } from './lib/localities.js';
+import { applyPropertySearchFilters } from './lib/propertySearch.js';
 
 const LocalityInsightsExplorer = lazy(() => import('./components/sections/LocalityInsightsPage.jsx').then((module) => ({ default: module.LocalityInsightsExplorer })));
 const phase2ReviewEnabled = import.meta.env.VITE_ENABLE_PHASE2_REVIEW === 'true';
 
 async function searchPublishedProperties(filters) {
   if (!supabase) throw new Error('Property search is not configured.');
-  const commercialTypes = ['Shop', 'Office', 'Commercial unit'];
   let query = supabase
     .from('properties')
     .select(phase2ReviewEnabled
       ? 'id,title,property_type,transaction_type,price,deposit,area_sqft,bedrooms,furnishing,description,features,image_urls,is_featured,locality:localities!inner(name)'
-      : 'id,title,property_type,transaction_type,price,deposit,area_sqft,bedrooms,furnishing,description,features,image_urls,locality:localities!inner(name)', { count: 'exact' })
-    .eq('status', 'published');
+      : 'id,title,property_type,transaction_type,price,deposit,area_sqft,bedrooms,furnishing,description,features,image_urls,locality:localities!inner(name)', { count: 'exact' });
+  query = applyPropertySearchFilters(query, filters);
   if (phase2ReviewEnabled) query = query.order('is_featured', { ascending: false });
   query = query.order('price', { ascending: true }).limit(1000);
-
-  if (filters.transaction === 'Buy') query = query.eq('transaction_type', 'sale');
-  if (filters.transaction === 'Rent') query = query.eq('transaction_type', 'rent');
-  if (filters.transaction === 'Commercial' || commercialTypes.includes(filters.propertyType)) query = query.eq('property_type', 'commercial');
-  if (filters.transaction !== 'Commercial' && !commercialTypes.includes(filters.propertyType)) {
-    if (filters.propertyType === '1 BHK') query = query.eq('bedrooms', 1);
-    if (filters.propertyType === '2 BHK') query = query.eq('bedrooms', 2);
-    if (filters.propertyType === '3 BHK or larger') query = query.gte('bedrooms', 3);
-  }
-  if (filters.locality && filters.locality !== 'Flexible / nearby') query = query.ilike('locality.name', `%${filters.locality}%`);
-  const maxPrice = Number(filters.budget);
-  if (Number.isFinite(maxPrice) && maxPrice > 0) query = query.lte('price', maxPrice);
-  const deposit = Number(filters.minimumDeposit);
-  if (Number.isFinite(deposit) && deposit > 0) query = query.gte('deposit', deposit);
-  const areaFrom = Number(filters.minimumArea);
-  if (Number.isFinite(areaFrom) && areaFrom > 0) query = query.gte('area_sqft', areaFrom);
-  const areaTo = Number(filters.maximumArea);
-  if (Number.isFinite(areaTo) && areaTo > 0) query = query.lte('area_sqft', areaTo);
-  if (filters.furnishing !== 'Any furnishing') query = query.eq('furnishing', filters.furnishing);
   return query;
 }
 
 function App() {
   const [transaction, setTransaction] = useState('Buy');
+  const [commercialTransaction, setCommercialTransaction] = useState('sale');
   const [propertyType, setPropertyType] = useState('Any property');
   const [locality, setLocality] = useState('Flexible / nearby');
   const [budget, setBudget] = useState('');
@@ -84,8 +66,8 @@ function App() {
   }, []);
 
   const requirementMessage = useMemo(() => (
-    `Requirement: ${transaction}; Property type: ${propertyType}; Preferred area: ${locality || 'Flexible'}; Maximum price: ${budget || 'Not specified'}; Minimum deposit: ${minimumDeposit || 'Not specified'}; Area: ${minimumArea || 'Any'}–${maximumArea || 'Any'} sq ft; Furnishing: ${furnishing}`
-  ), [transaction, propertyType, locality, budget, minimumDeposit, minimumArea, maximumArea, furnishing]);
+    `Requirement: ${transaction === 'Commercial' ? `Commercial for ${commercialTransaction}` : transaction}; Property type: ${propertyType}; Preferred area: ${locality || 'Flexible'}; Maximum budget: ${budget || 'Not specified'} ${transaction === 'Rent' || (transaction === 'Commercial' && commercialTransaction === 'rent') ? '₹/month' : '₹'}; Minimum deposit: ${transaction === 'Rent' || (transaction === 'Commercial' && commercialTransaction === 'rent') ? minimumDeposit || 'Not specified' : 'Not applicable'}; Area: ${minimumArea || 'Any'}–${maximumArea || 'Any'} sq ft; Furnishing: ${furnishing}`
+  ), [transaction, commercialTransaction, propertyType, locality, budget, minimumDeposit, minimumArea, maximumArea, furnishing]);
 
   async function submitSearch(event) {
     event.preventDefault();
@@ -103,7 +85,7 @@ function App() {
     }
     setSearchState('loading');
     try {
-      const { data, error, count } = await searchPublishedProperties({ transaction, propertyType, locality, budget, minimumDeposit, minimumArea, maximumArea, furnishing });
+      const { data, error, count } = await searchPublishedProperties({ transaction, commercialTransaction, propertyType, locality, budget, minimumDeposit, minimumArea, maximumArea, furnishing });
       if (error) throw error;
       setProperties(data ?? []);
       setPropertyCount(count ?? data?.length ?? 0);
@@ -151,16 +133,20 @@ function App() {
               </div>
               <div className="transaction-tabs" role="tablist" aria-label="Property requirement">
                 {['Buy', 'Rent', 'Sell', 'Commercial'].map((item) => (
-                  <button key={item} type="button" className={transaction === item ? 'transaction-tab active' : 'transaction-tab'} onClick={() => setTransaction(item)} role="tab" aria-selected={transaction === item}>
+                  <button key={item} type="button" className={transaction === item ? 'transaction-tab active' : 'transaction-tab'} onClick={() => { setTransaction(item); setPropertyType(item === 'Commercial' ? 'Any commercial property' : 'Any property'); setBudget(''); setMinimumDeposit(''); }} role="tab" aria-selected={transaction === item}>
                     {item === 'Buy' ? <Home size={16} /> : item === 'Rent' ? <KeyRound size={16} /> : item === 'Sell' ? <ArrowRight size={16} /> : <Store size={16} />}{item}
                   </button>
                 ))}
               </div>
+              {transaction === 'Commercial' && <div className="transaction-tabs transaction-subtabs" role="group" aria-label="Commercial transaction type">
+                <button type="button" className={commercialTransaction === 'sale' ? 'transaction-tab active' : 'transaction-tab'} aria-pressed={commercialTransaction === 'sale'} onClick={() => { setCommercialTransaction('sale'); setBudget(''); setMinimumDeposit(''); }}>Commercial for sale</button>
+                <button type="button" className={commercialTransaction === 'rent' ? 'transaction-tab active' : 'transaction-tab'} aria-pressed={commercialTransaction === 'rent'} onClick={() => { setCommercialTransaction('rent'); setBudget(''); setMinimumDeposit(''); }}>Commercial for rent</button>
+              </div>}
               <form className="search-form" onSubmit={submitSearch}>
                 <label className="field"><span>Preferred locality / micro-market</span><span className="select-wrap"><MapPin size={17} /><select value={locality} onChange={(e) => setLocality(e.target.value)}>{LOCALITY_NAMES.map((name) => <option key={name}>{name}</option>)}<option>Flexible / nearby</option></select><ChevronDown size={15} /></span></label>
-                <label className="field"><span>BHK / property type</span><span className="select-wrap"><Building2 size={17} /><select value={propertyType} onChange={(e) => setPropertyType(e.target.value)}><option>Any property</option><option>1 BHK</option><option>2 BHK</option><option>3 BHK or larger</option><option>Shop</option><option>Office</option><option>Commercial unit</option></select><ChevronDown size={15} /></span></label>
-                <label className="field"><span>Maximum budget (₹)</span><input type="number" min="0" step="1000" value={budget} onChange={(e) => setBudget(e.target.value)} placeholder={transaction === 'Buy' ? 'e.g. 8500000' : 'e.g. 25000'} /></label>
-                <label className="field"><span>Minimum deposit (₹)</span><input type="number" min="0" step="1000" value={minimumDeposit} onChange={(e) => setMinimumDeposit(e.target.value)} placeholder="Optional" /></label>
+                <label className="field"><span>{transaction === 'Commercial' ? 'Commercial property type' : 'BHK / property type'}</span><span className="select-wrap"><Building2 size={17} /><select value={propertyType} onChange={(e) => setPropertyType(e.target.value)}>{transaction === 'Commercial' ? <><option>Any commercial property</option><option>Shop</option><option>Office</option><option>Commercial unit</option></> : <><option>Any property</option><option>1 BHK</option><option>2 BHK</option><option>3 BHK or larger</option><option>Shop</option><option>Office</option><option>Commercial unit</option></>}</select><ChevronDown size={15} /></span></label>
+                <label className="field"><span>Maximum budget ({transaction === 'Rent' || (transaction === 'Commercial' && commercialTransaction === 'rent') ? '₹ / month' : '₹'})</span><input type="number" min="0" step="1000" value={budget} onChange={(e) => setBudget(e.target.value)} placeholder={transaction === 'Buy' || (transaction === 'Commercial' && commercialTransaction === 'sale') ? 'e.g. 8500000' : 'e.g. 25000'} /></label>
+                {(transaction === 'Rent' || (transaction === 'Commercial' && commercialTransaction === 'rent')) && <label className="field"><span>Minimum deposit (₹)</span><input type="number" min="0" step="1000" value={minimumDeposit} onChange={(e) => setMinimumDeposit(e.target.value)} placeholder="Optional" /></label>}
                 <button className="button button-dark search-submit" type="submit"><Search size={17} /> Match my requirement</button>
                 <details className="search-advanced">
                   <summary>More filters</summary>

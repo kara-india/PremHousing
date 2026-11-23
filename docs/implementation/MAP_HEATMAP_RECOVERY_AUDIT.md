@@ -5,6 +5,16 @@
 **Repair branch:** `fix/prem-map-first-heatmap-recovery`
 **Scope:** Local repository, source, design, test plan, GitHub PR #4 and aggregate-only live PremHousing inspection. No application code, provider credentials, schema/data writes, deployment or merge was performed.
 
+> **Historical snapshot, superseded for current-state decisions.** The findings below describe the repository and owner information available to that 2026-11-23 audit, before the explorer implementation and later owner clarification. The owner has since confirmed the 32 published rows are PREM-owned inventory (this report does not establish independent source or rights provenance). Mapbox has since been selected and implemented. The Homepage Property Explorer is live inside `/`; Locality Intelligence is live below it and at `/insights`. The map resolves approximate locality centres at request time and does not use property pins. Current code and outstanding acceptance are tracked in `docs/implementation/MASTER_WORKLIST.md` and `docs/testing/MAP_EXPLORER_TEST_PLAN.md`.
+
+## Current reconciliation (2026-11-23)
+
+- Historical claims below that no Mapbox package, provider token, map, or explorer existed are true only of the repository snapshot named above; they are not current implementation facts.
+- Do not label the 32 rows as MagicBricks inventory. The owner says they are PREM-owned. Do not infer any additional source, third-party license, verification, or permission from that confirmation.
+- The live maps display Mapbox tiles and transient, validated locality-centre coordinates. They do not display listing-level pins or persist geocoder results.
+- The product currently has no verified sale/rent transaction dataset, market trend series, boundaries, amenity coverage, or forecast ground truth. Do not invent market indicators, scores, POI facts, heatmaps or forecasts from asking prices or listing counts.
+- Phase 3 implementation acceptance is now recorded in `docs/testing/MAP_EXPLORER_TEST_PLAN.md`; the 2026-11-23 build still reports a 1.9 MB minified / 531 KB gzip lazy Mapbox chunk. Device-level performance, provider commercial review, data-source rights review and analytical-layer validation remain pre-launch gates, not unfinished implementation of the locality-centre map.
+
 ## Executive finding
 
 The supplied “all phases complete” map/heatmap summary does not match the current GitHub `master` snapshot inspected for this task.

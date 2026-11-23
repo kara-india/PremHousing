@@ -19,3 +19,5 @@
 @keyframes map-pulse{to{opacity:.4;transform:scale(.78)}}
 @media(max-width:700px){.locality-map-wrap{min-height:330px}.locality-map-note{max-width:calc(100% - 24px);font-size:8px}.locality-map-fallback{padding:18px}}
 @media(prefers-reduced-motion:reduce){.map-loading-dot{animation:none}}
+.locality-map-overlay.map-error button{flex:none;min-height:32px;padding:6px 10px;border:1px solid #26382f;background:#26382f;color:#fff;font-size:10px;font-weight:700}
+.locality-map-overlay.map-error button:focus-visible{outline:2px solid #9a7b4d;outline-offset:2px}

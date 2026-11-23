@@ -3,6 +3,7 @@ import { ArrowRight, Check, Compass, Info, List, Map as MapIcon, MapPin, Search,
 import { Link } from 'react-router-dom';
 import { SiteFooter, SiteHeader } from '../SiteChrome.jsx';
 import { LOCALITY_NAMES } from '../../lib/localities.js';
+import { fetchAllPages } from '../../lib/pagination.js';
 import { supabase } from '../../lib/supabase.js';
 import './LocalityInsightsPage.css';
 
@@ -16,6 +17,7 @@ const profiles = [
 
 const currency = new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 });
 const propertyProjection = 'id,title,property_type,transaction_type,price,area_sqft,bedrooms,furnishing,image_urls,locality:localities!inner(name)';
+const inventoryPageSize = 500;
 
 export function LocalityInsightsExplorer({ embedded = false }) {
   const [records, setRecords] = useState([]);
@@ -27,33 +29,35 @@ export function LocalityInsightsExplorer({ embedded = false }) {
   const [bedrooms, setBedrooms] = useState('any');
   const [budget, setBudget] = useState('');
   const [selectedLocality, setSelectedLocality] = useState('Mira Road');
+  const [comparisonLocalities, setComparisonLocalities] = useState(['Mira Road']);
   const [view, setView] = useState('map');
   const mapViewportRef = useRef(null);
   const [mapActivated, setMapActivated] = useState(() => typeof window !== 'undefined' && !('IntersectionObserver' in window));
 
   useEffect(() => {
     let active = true;
+    const controller = new AbortController();
     async function loadProperties() {
       if (!supabase) { setLoadState('unavailable'); return; }
       setLoadState('loading');
       try {
-        const { data, error, count } = await supabase
+        const { data: records, count } = await fetchAllPages((from, to, signal) => supabase
           .from('properties')
-          .select(propertyProjection, { count: 'exact' })
+          .select(propertyProjection, from === 0 ? { count: 'exact' } : {})
           .eq('status', 'published')
-          .order('price', { ascending: true })
-          .limit(500);
-        if (error) throw error;
+          .order('id', { ascending: true })
+          .range(from, to)
+          .abortSignal(signal), inventoryPageSize, controller.signal);
         if (!active) return;
-        setRecords(data ?? []);
-        setRecordCount(count ?? data?.length ?? 0);
+        setRecords(records);
+        setRecordCount(count);
         setLoadState('ready');
-      } catch {
-        if (active) setLoadState('error');
+      } catch (error) {
+        if (active && error?.name !== 'AbortError') setLoadState('error');
       }
     }
     loadProperties();
-    return () => { active = false; };
+    return () => { active = false; controller.abort(); };
   }, []);
 
   useEffect(() => {
@@ -91,6 +95,14 @@ export function LocalityInsightsExplorer({ embedded = false }) {
   const selectedProfile = profiles.find((profile) => profile.id === profileId) ?? profiles[0];
   const selectedProperties = filteredProperties.filter((property) => property.locality?.name === selectedLocality);
 
+  function toggleComparisonLocality(name) {
+    setComparisonLocalities((current) => {
+      if (current.includes(name)) return current.filter((locality) => locality !== name);
+      if (current.length >= 3) return current;
+      return [...current, name];
+    });
+  }
+
   const Heading = embedded ? 'h2' : 'h1';
 
   return <>
@@ -105,8 +117,8 @@ export function LocalityInsightsExplorer({ embedded = false }) {
         <aside className="insights-requirements">
           <div className="insights-panel-heading"><span className="eyebrow">YOUR REQUIREMENT</span><h2>What matters to you?</h2></div>
           <div className="insights-transaction" role="group" aria-label="Property transaction">
-            <button type="button" className={transaction === 'sale' ? 'active' : ''} aria-pressed={transaction === 'sale'} onClick={() => setTransaction('sale')}>Buy</button>
-            <button type="button" className={transaction === 'rent' ? 'active' : ''} aria-pressed={transaction === 'rent'} onClick={() => setTransaction('rent')}>Rent</button>
+            <button type="button" className={transaction === 'sale' ? 'active' : ''} aria-pressed={transaction === 'sale'} onClick={() => { setTransaction('sale'); setBudget(''); }}>Buy</button>
+            <button type="button" className={transaction === 'rent' ? 'active' : ''} aria-pressed={transaction === 'rent'} onClick={() => { setTransaction('rent'); setBudget(''); }}>Rent</button>
           </div>
           <label className="insights-field">Maximum budget ({transaction === 'rent' ? '₹ / month' : '₹'})<input type="number" min="0" step="10000" value={budget} onChange={(event) => setBudget(event.target.value)} placeholder="No limit" /></label>
           <label className="insights-field">Property type<select value={propertyType} onChange={(event) => setPropertyType(event.target.value)}><option value="residential">Residential</option><option value="commercial">Commercial</option><option value="any">Any property</option></select></label>
@@ -137,6 +149,38 @@ export function LocalityInsightsExplorer({ embedded = false }) {
             {localitySummaries.map(({ name, count }) => <button key={name} type="button" className={selectedLocality === name ? 'selected' : ''} aria-pressed={selectedLocality === name} onClick={() => setSelectedLocality(name)}><span><MapPin size={15} />{name}</span><b>{count} {count === 1 ? 'property' : 'properties'}</b></button>)}
           </div>}
           <p className="insights-map-legend"><span><i /> Published property count by locality</span><span>Mapbox · approximate centres, not property pins</span></p>
+          <section className="insights-compare" aria-labelledby="insights-compare-title">
+            <div className="insights-compare-heading">
+              <div><span className="eyebrow">CATALOGUE COMPARISON</span><h2 id="insights-compare-title">Compare areas</h2></div>
+              <span aria-live="polite">{comparisonLocalities.length} of 3 selected</span>
+            </div>
+            <p className="insights-compare-help">Choose up to three localities to compare matching published PREM listings under your current filters.</p>
+            <fieldset className="insights-compare-options">
+              <legend className="visually-hidden">Localities to compare</legend>
+              {localitySummaries.map(({ name, count }) => {
+                const checked = comparisonLocalities.includes(name);
+                const disabled = !checked && comparisonLocalities.length >= 3;
+                return <label className={`insights-compare-option${checked ? ' selected' : ''}`} key={name}>
+                  <input type="checkbox" checked={checked} disabled={disabled} onChange={() => toggleComparisonLocality(name)} />
+                  <span>{name}</span>
+                  <small>{loadState === 'ready' ? `${count} ${count === 1 ? 'match' : 'matches'}` : loadState === 'loading' ? 'Loading' : 'Unavailable'}</small>
+                </label>;
+              })}
+            </fieldset>
+            {comparisonLocalities.length < 2
+              ? <p className="insights-compare-empty">Select one more locality to see a side-by-side inventory comparison.</p>
+              : <div className="insights-compare-grid" aria-label="Published PREM inventory comparison">
+                {comparisonLocalities.map((name) => {
+                  const summary = localitySummaries.find((item) => item.name === name);
+                  return <article className="insights-compare-card" key={name}>
+                    <h3>{name}</h3>
+                    <strong>{loadState === 'ready' ? summary?.count ?? 0 : '—'}</strong>
+                    <span>matching published {summary?.count === 1 ? 'listing' : 'listings'}</span>
+                  </article>;
+                })}
+              </div>}
+            <p className="insights-compare-caveat">These are PREM catalogue counts for your selected filters. They are not market-size estimates, rankings, or price comparisons.</p>
+          </section>
         </div>
 
         <aside className="insights-evidence" id="locality-results">

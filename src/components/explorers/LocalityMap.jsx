@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import { AlertTriangle, MapPin } from 'lucide-react';
-import { geocodeLocality, hasMapboxToken, mapboxAccessToken } from '../../lib/mapbox.js';
+import { geocodeLocalities, hasMapboxToken, isMapboxResourceError, mapboxAccessToken } from '../../lib/mapbox.js';
 import './LocalityMap.css';
 
 const MIRA_BHAYANDAR_CENTER = [72.82, 19.29];
@@ -28,6 +28,7 @@ function LocalityMap({ localities = [], selectedLocality = '', onSelectLocality 
   const [geocodeState, setGeocodeState] = useState('loading');
   const [geocodeError, setGeocodeError] = useState('');
   const [mapState, setMapState] = useState('loading');
+  const [mapRetryCount, setMapRetryCount] = useState(0);
   const normalized = useMemo(() => normalizeLocalities(localities), [localities]);
   const localitySignature = normalized.map(({ name }) => name).join('|');
 
@@ -49,10 +50,17 @@ function LocalityMap({ localities = [], selectedLocality = '', onSelectLocality 
     const controller = new AbortController();
     setGeocodeState('loading');
     setGeocodeError('');
-    Promise.all(requestedNames.map((name) => geocodeLocality(name, controller.signal))).then((points) => {
-      const validPoints = points.filter(Boolean);
+    geocodeLocalities(requestedNames, controller.signal).then((results) => {
+      const validPoints = results
+        .filter((result) => result.status === 'fulfilled')
+        .map((result) => result.value)
+        .filter(Boolean);
+      const failures = results.filter((result) => result.status === 'rejected').length;
       setGeocoded(validPoints);
-      setGeocodeState(validPoints.length ? 'ready' : 'empty');
+      setGeocodeError(failures ? `${failures} of ${requestedNames.length} locality lookups could not be completed.` : '');
+      setGeocodeState(validPoints.length
+        ? failures ? 'partial' : 'ready'
+        : failures ? 'error' : 'empty');
     }).catch((error) => {
       if (error.name !== 'AbortError') {
         setGeocoded([]);
@@ -76,10 +84,14 @@ function LocalityMap({ localities = [], selectedLocality = '', onSelectLocality 
       cooperativeGestures: true,
     });
     mapRef.current = map;
+    setMapState('loading');
     map.addControl(new mapboxgl.NavigationControl({ showCompass: false }), 'top-right');
     map.addControl(new mapboxgl.ScaleControl({ unit: 'metric', maxWidth: 90 }), 'bottom-left');
     map.once('load', () => { if (mounted) setMapState('ready'); });
-    map.on('error', () => { if (mounted && !map.isStyleLoaded()) setMapState('error'); });
+    map.on('error', (event) => {
+      if (!mounted) return;
+      if (isMapboxResourceError(event)) setMapState('error');
+    });
     return () => {
       mounted = false;
       markersRef.current.forEach((marker) => marker.remove());
@@ -89,7 +101,7 @@ function LocalityMap({ localities = [], selectedLocality = '', onSelectLocality 
     };
   // Map lifetime is tied to the component; locality changes update markers below.
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [hasMapboxToken]);
+  }, [hasMapboxToken, mapRetryCount]);
 
   useEffect(() => {
     const map = mapRef.current;
@@ -115,7 +127,10 @@ function LocalityMap({ localities = [], selectedLocality = '', onSelectLocality 
   useEffect(() => {
     const map = mapRef.current;
     const selected = geocoded.find((point) => point.name === selectedLocality);
-    if (map && selected && mapState === 'ready') map.easeTo({ center: [selected.longitude, selected.latitude], zoom: Math.max(map.getZoom(), 12), duration: 500 });
+    if (map && selected && mapState === 'ready') {
+      const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      map.easeTo({ center: [selected.longitude, selected.latitude], zoom: Math.max(map.getZoom(), 12), duration: reduceMotion ? 0 : 500 });
+    }
   }, [geocoded, mapState, selectedLocality]);
 
   const locationMessage = geocodeState === 'loading'
@@ -124,6 +139,8 @@ function LocalityMap({ localities = [], selectedLocality = '', onSelectLocality 
       ? 'Map is not configured yet. Add the Mapbox public token to the Vercel environment to load the locality map.'
       : geocodeState === 'error'
         ? `${geocodeError} The locality list remains available.`
+        : geocodeState === 'partial'
+          ? `${geocodeError} Available locality points are shown; the full locality list remains available.`
         : 'No locality coordinates were returned. The locality list remains available.';
 
   return <div className="locality-map-wrap">
@@ -134,8 +151,9 @@ function LocalityMap({ localities = [], selectedLocality = '', onSelectLocality 
       <span>{locationMessage}</span>
     </div>}
     {hasMapboxToken && geocodeState === 'loading' && <div className="locality-map-overlay" role="status"><span className="map-loading-dot" /> {locationMessage}</div>}
-    {hasMapboxToken && mapState === 'error' && <div className="locality-map-overlay map-error" role="status"><AlertTriangle size={16} /> Map tiles could not load. Use the locality list beside the map.</div>}
-    {geocodeState === 'ready' && <p className="locality-map-note">Mapbox Geocoding · approximate locality centres only; not property locations</p>}
+    {hasMapboxToken && geocodeState === 'partial' && <div className="locality-map-overlay" role="status"><AlertTriangle size={16} /> {locationMessage}</div>}
+    {hasMapboxToken && mapState === 'error' && <div className="locality-map-overlay map-error" role="status"><AlertTriangle size={16} /> Map tiles could not load. Use the locality list beside the map. <button type="button" onClick={() => { setMapState('loading'); setMapRetryCount((count) => count + 1); }}>Retry map</button></div>}
+    {(geocodeState === 'ready' || geocodeState === 'partial') && <p className="locality-map-note">Mapbox Geocoding · approximate locality centres only; not property locations</p>}
   </div>;
 }
 

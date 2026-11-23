@@ -1,7 +1,17 @@
 # PREM Design Phase — QA Report
 
-**Status:** Static design preview revised after owner review; no application implementation or database mutation.
-**Date:** 2026-11-23
+**Status:** Historical review of the static design preview. The preview is not the live application; the homepage and locality explorers have since been implemented in React. See the current implementation and pending acceptance below.
+**Original review date:** 2026-11-23
+
+## Current implementation reconciliation (2026-11-23)
+
+- The Homepage Property Explorer is part of the existing PREM homepage; Locality Intelligence appears below it and remains reachable at `/insights`.
+- Both live experiences use Mapbox GL JS and transient Mapbox Geocoding API v6 locality lookups. Map points are approximate locality centres, not building or listing positions.
+- The owner confirmed the 32 published rows are PREM-owned inventory. This report does not establish independent source, licensing, verification, or market-data provenance. Asking prices and listing counts are not transaction evidence or forecast inputs.
+- Market heatmaps, rent/price trends, POI-derived scores, investment recommendations, and forecasts remain unavailable where source evidence is missing.
+- Phase 3 implementation checks completed on 2026-11-23: partial geocoding keeps successful points, tile/auth errors have a retry path, public detail omits exact address, locality comparison is inventory-only, and desktop/mobile local browser review confirmed map/list behavior. Unit tests cover published-only filter specs, commercial sale/rent unit separation, pagination and Mapbox recovery helpers. The production build reports a lazy Mapbox chunk of about 1.9 MB minified / 531 KB gzip; map code is deferred until the explorer is approached, but low-bandwidth target-device performance still needs measurement before a launch claim. See `docs/testing/MAP_EXPLORER_TEST_PLAN.md` for the broader launch gates.
+
+The sections below record the design-preview review at its original point in time; statements about a schematic map or static-only preview are historical and do not describe the current React application.
 
 ## Review scope
 
