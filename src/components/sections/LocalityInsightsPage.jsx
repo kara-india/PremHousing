@@ -1,4 +1,4 @@
-import { lazy, Suspense, useEffect, useMemo, useState } from 'react';
+import { lazy, Suspense, useEffect, useMemo, useRef, useState } from 'react';
 import { ArrowRight, Check, Compass, Info, List, Map as MapIcon, MapPin, Search, ShieldCheck } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { SiteFooter, SiteHeader } from '../SiteChrome.jsx';
@@ -17,7 +17,7 @@ const profiles = [
 const currency = new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 });
 const propertyProjection = 'id,title,property_type,transaction_type,price,area_sqft,bedrooms,furnishing,image_urls,locality:localities!inner(name)';
 
-function LocalityInsightsPage() {
+export function LocalityInsightsExplorer({ embedded = false }) {
   const [records, setRecords] = useState([]);
   const [recordCount, setRecordCount] = useState(0);
   const [loadState, setLoadState] = useState('loading');
@@ -28,6 +28,8 @@ function LocalityInsightsPage() {
   const [budget, setBudget] = useState('');
   const [selectedLocality, setSelectedLocality] = useState('Mira Road');
   const [view, setView] = useState('map');
+  const mapViewportRef = useRef(null);
+  const [mapActivated, setMapActivated] = useState(() => typeof window !== 'undefined' && !('IntersectionObserver' in window));
 
   useEffect(() => {
     let active = true;
@@ -54,6 +56,18 @@ function LocalityInsightsPage() {
     return () => { active = false; };
   }, []);
 
+  useEffect(() => {
+    if (view !== 'map' || mapActivated || !mapViewportRef.current || !('IntersectionObserver' in window)) return undefined;
+    const observer = new IntersectionObserver((entries) => {
+      if (entries.some((entry) => entry.isIntersecting)) {
+        setMapActivated(true);
+        observer.disconnect();
+      }
+    }, { rootMargin: '180px 0px' });
+    observer.observe(mapViewportRef.current);
+    return () => observer.disconnect();
+  }, [mapActivated, view]);
+
   const filteredProperties = useMemo(() => records.filter((property) => {
     if (property.transaction_type !== transaction) return false;
     if (propertyType === 'residential' && property.property_type === 'commercial') return false;
@@ -77,13 +91,13 @@ function LocalityInsightsPage() {
   const selectedProfile = profiles.find((profile) => profile.id === profileId) ?? profiles[0];
   const selectedProperties = filteredProperties.filter((property) => property.locality?.name === selectedLocality);
 
-  return <div className="site-shell insights-page">
-    <SiteHeader />
-    <main>
-      <section className="insights-intro">
+  const Heading = embedded ? 'h2' : 'h1';
+
+  return <>
+      <section className="insights-intro" id={embedded ? 'locality-insights' : undefined}>
         <div className="wrap">
           <div className="eyebrow"><span className="eyebrow-line" /> LOCALITY INTELLIGENCE</div>
-          <div className="insights-intro-row"><div><h1>Understand the area.<br /><em>Then choose your place.</em></h1><p>Set your requirements, explore current PREM inventory by locality, and see clearly where reliable evidence is still missing.</p></div><span className="insights-asof"><ShieldCheck size={15} /> Published PREM inventory</span></div>
+          <div className="insights-intro-row"><div><Heading>Understand the area.<br /><em>Then choose your place.</em></Heading><p>Set your requirements, explore current PREM inventory by locality, and see clearly where reliable evidence is still missing.</p></div><span className="insights-asof"><ShieldCheck size={15} /> Published PREM inventory</span></div>
         </div>
       </section>
 
@@ -115,7 +129,10 @@ function LocalityInsightsPage() {
               <button type="button" className={view === 'list' ? 'active' : ''} aria-pressed={view === 'list'} onClick={() => setView('list')}><List size={15} /> List</button>
             </div>
           </div>
-          {view === 'map' && <div className="insights-map"><Suspense fallback={<div className="locality-map-loading" role="status">Preparing locality map…</div>}><LocalityMap localities={localitySummaries} selectedLocality={selectedLocality} onSelectLocality={setSelectedLocality} /></Suspense></div>}
+          {view === 'map' && <div className="insights-map" ref={mapViewportRef}>{mapActivated
+            ? <Suspense fallback={<div className="locality-map-loading" role="status">Preparing locality map…</div>}><LocalityMap localities={localitySummaries} selectedLocality={selectedLocality} onSelectLocality={setSelectedLocality} /></Suspense>
+            : <div className="locality-map-loading" role="status">Map loads as you reach locality insights.</div>}
+          </div>}
           {view === 'list' && <div className="insights-locality-list" aria-label="Localities and matching property counts">
             {localitySummaries.map(({ name, count }) => <button key={name} type="button" className={selectedLocality === name ? 'selected' : ''} aria-pressed={selectedLocality === name} onClick={() => setSelectedLocality(name)}><span><MapPin size={15} />{name}</span><b>{count} {count === 1 ? 'property' : 'properties'}</b></button>)}
           </div>}
@@ -144,7 +161,13 @@ function LocalityInsightsPage() {
         </aside>
       </section>
       <section className="insights-footnote wrap"><p>Map markers locate named areas approximately. They do not identify a building, property boundary, travel distance, amenity, or investment outcome.</p></section>
-    </main>
+  </>;
+}
+
+function LocalityInsightsPage() {
+  return <div className="site-shell insights-page">
+    <SiteHeader />
+    <main><LocalityInsightsExplorer /></main>
     <SiteFooter />
   </div>;
 }

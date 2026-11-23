@@ -47,6 +47,7 @@ function PropertyCard({ property, onEnquire }) {
 function PropertyResults({ state, properties, count, onEnquire }) {
   const [view, setView] = useState('map');
   const [selectedLocality, setSelectedLocality] = useState('');
+  const [expandedListKey, setExpandedListKey] = useState('');
   const mapViewportRef = useRef(null);
   const [mapActivated, setMapActivated] = useState(() => typeof window !== 'undefined' && !('IntersectionObserver' in window));
 
@@ -63,6 +64,11 @@ function PropertyResults({ state, properties, count, onEnquire }) {
     return () => observer.disconnect();
   }, [mapActivated, view]);
 
+  function selectLocality(name) {
+    setSelectedLocality(name);
+    setExpandedListKey('');
+  }
+
   const localityCounts = useMemo(() => {
     const counts = new Map();
     properties.forEach((property) => {
@@ -72,9 +78,12 @@ function PropertyResults({ state, properties, count, onEnquire }) {
     return [...new Set([...LOCALITY_NAMES, ...counts.keys()])].map((name) => ({ name, count: counts.get(name) ?? 0 }));
   }, [properties]);
 
-  const visibleProperties = selectedLocality
+  const matchingProperties = selectedLocality
     ? properties.filter((property) => property.locality?.name === selectedLocality)
     : properties;
+  const listKey = `${selectedLocality}:${properties.map((property) => property.id).join(',')}`;
+  const showAllProperties = expandedListKey === listKey;
+  const visibleProperties = showAllProperties ? matchingProperties : matchingProperties.slice(0, 3);
   const readyCount = Number.isFinite(count) ? count : properties.length;
 
   return <section className="property-results" id="property-results" aria-live="polite" aria-busy={state === 'loading'}>
@@ -98,19 +107,19 @@ function PropertyResults({ state, properties, count, onEnquire }) {
     <div className={`property-explorer-layout${view === 'list' ? ' list-view' : ''}`}>
       {view === 'map' && <div className="property-explorer-map" ref={mapViewportRef}>
         {mapActivated
-          ? <Suspense fallback={<div className="locality-map-loading" role="status">Preparing locality map…</div>}><LocalityMap localities={localityCounts} selectedLocality={selectedLocality} onSelectLocality={setSelectedLocality} /></Suspense>
+          ? <Suspense fallback={<div className="locality-map-loading" role="status">Preparing locality map…</div>}><LocalityMap localities={localityCounts} selectedLocality={selectedLocality} onSelectLocality={selectLocality} /></Suspense>
           : <div className="locality-map-loading">Map loads as you reach the explorer.</div>}
       </div>}
       <div className="property-explorer-results">
         <div className="property-explorer-localities" aria-label="Published property count by locality">
           <p>{state === 'ready' ? 'MATCHES BY LOCALITY' : 'MIRA-BHAYANDAR LOCALITIES'}</p>
           <div className="property-locality-chips">
-            {localityCounts.map(({ name, count: localityCount }) => <button key={name} type="button" className={selectedLocality === name ? 'selected' : ''} aria-pressed={selectedLocality === name} onClick={() => setSelectedLocality((active) => active === name ? '' : name)}>
+            {localityCounts.map(({ name, count: localityCount }) => <button key={name} type="button" className={selectedLocality === name ? 'selected' : ''} aria-pressed={selectedLocality === name} onClick={() => selectLocality(selectedLocality === name ? '' : name)}>
               <span>{name}</span>{state === 'ready' && <b>{localityCount}</b>}
             </button>)}
           </div>
         </div>
-        {selectedLocality && <div className="property-selected-locality"><span>{selectedLocality}</span><button type="button" onClick={() => setSelectedLocality('')} aria-label="Clear locality selection"><X size={14} /> Clear</button></div>}
+        {selectedLocality && <div className="property-selected-locality"><span>{selectedLocality}</span><button type="button" onClick={() => selectLocality('')} aria-label="Clear locality selection"><X size={14} /> Clear</button></div>}
         {state === 'idle' && <p className="property-results-message">Choose your budget and property preferences above, then select “Match my requirement” to see current published options here.</p>}
         {state === 'loading' && <p className="property-results-message" role="status">Searching published PREM listings…</p>}
         {state === 'error' && <p className="property-results-message" role="alert">We couldn’t load listings just now. Please try again or contact our team.</p>}
@@ -118,10 +127,13 @@ function PropertyResults({ state, properties, count, onEnquire }) {
         {state === 'ready' && properties.length > 0 && visibleProperties.length === 0 && <p className="property-results-message">No matching listings in {selectedLocality}. Choose another locality or clear this selection.</p>}
         {state === 'ready' && visibleProperties.length > 0 && (
           <>
-            <div className="property-explorer-list-heading"><h3>{selectedLocality || 'Published properties'}</h3><span>{visibleProperties.length}{readyCount > properties.length ? ` shown of ${readyCount}` : ''}</span></div>
-            <div className="property-result-grid">
+            <div className="property-explorer-list-heading"><h3>{selectedLocality || 'Published properties'}</h3><span>{visibleProperties.length}{matchingProperties.length > 3 ? ` shown of ${matchingProperties.length}` : ''}</span></div>
+            <div className="property-result-grid" id="property-result-list">
               {visibleProperties.map((property) => <PropertyCard property={property} onEnquire={onEnquire} key={property.id} />)}
             </div>
+            {matchingProperties.length > 3 && <button className="property-results-expand" type="button" aria-expanded={showAllProperties} aria-controls="property-result-list" onClick={() => setExpandedListKey(showAllProperties ? '' : listKey)}>
+              {showAllProperties ? 'Show first 3 properties' : `View all ${matchingProperties.length} properties`}
+            </button>}
             <p className="property-results-disclaimer">Listing details and availability are confirmed with PREM before a viewing. Map markers represent localities, not exact property addresses.</p>
           </>
         )}

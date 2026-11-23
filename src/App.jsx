@@ -1,7 +1,7 @@
-import { createElement, useEffect, useMemo, useState } from 'react';
+import { lazy, Suspense, useEffect, useMemo, useState } from 'react';
 import {
-  ArrowRight, Building2, Check, ChevronDown,
-  Home, KeyRound, MapPin, MessageCircle, Phone, Search, ShieldCheck, Store
+  ArrowRight, Building2, ChevronDown,
+  Home, KeyRound, MapPin, MessageCircle, Phone, Search, Store
 } from 'lucide-react';
 import './App.css';
 import './components/HeroMedia.css';
@@ -12,19 +12,7 @@ import PropertyResults from './components/sections/PropertyResults';
 import { SiteFooter, SiteHeader } from './components/SiteChrome.jsx';
 import { LOCALITY_NAMES } from './lib/localities.js';
 
-const areas = [
-  { name: 'Mira Road East', note: 'Residential homes, resale & rentals', image: 'https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=900&q=85' },
-  { name: 'Bhayandar East', note: 'Homes close to everyday essentials', image: 'https://images.unsplash.com/photo-1600566753086-00f18fb6b3ea?auto=format&fit=crop&w=900&q=85' },
-  { name: 'Bhayandar West', note: 'Residential and commercial options', image: 'https://images.unsplash.com/photo-1600607687920-4e2a09cf159d?auto=format&fit=crop&w=900&q=85' },
-  { name: 'Commercial spaces', note: 'Shops, offices & business premises', image: 'https://images.unsplash.com/photo-1497366754035-f200968a6e72?auto=format&fit=crop&w=900&q=85' },
-];
-
-const services = [
-  { icon: Home, title: 'Buy a home', text: 'Explore resale and new-project options with local guidance.', action: 'Buy' },
-  { icon: KeyRound, title: 'Rent a property', text: 'Find a home that fits your budget, location and move-in date.', action: 'Rent' },
-  { icon: Building2, title: 'Sell your property', text: 'Discuss pricing, buyer enquiries and a clear selling process.', action: 'Sell' },
-  { icon: Store, title: 'Commercial property', text: 'Find or lease shops, offices and other business spaces.', action: 'Commercial' },
-];
+const LocalityInsightsExplorer = lazy(() => import('./components/sections/LocalityInsightsPage.jsx').then((module) => ({ default: module.LocalityInsightsExplorer })));
 
 async function searchPublishedProperties(filters) {
   if (!supabase) throw new Error('Property search is not configured.');
@@ -138,15 +126,6 @@ function App() {
     window.open(whatsappUrl(message), '_blank', 'noopener,noreferrer');
   }
 
-  function chooseService(action) {
-    setTransaction(action);
-    setLead((current) => ({
-      ...current,
-      requirement: action === 'Buy' ? 'Buy a property' : action === 'Rent' ? 'Rent a property' : action === 'Sell' ? 'Sell my property' : 'Commercial property',
-    }));
-    document.getElementById('search')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-  }
-
   return (
     <div className="site-shell">
       <SiteHeader />
@@ -212,45 +191,9 @@ function App() {
           />
         </div>
 
-        <section className="section services-section" id="services">
-          <div className="wrap">
-            <div className="section-intro">
-              <div><span className="eyebrow">ONE LOCAL TEAM, EVERY PROPERTY NEED</span><h2>Make your next move<br /><em>with confidence.</em></h2></div>
-              <p>Whether you’re finding a first home, moving tenants into a property, selling a flat or choosing a shop, start with a conversation grounded in the local market.</p>
-            </div>
-            <div className="service-grid">
-              {services.map(({ icon, title, text, action }, index) => (
-                <button className="service-card" key={title} onClick={() => chooseService(action)}>
-                  <span className="service-index">0{index + 1}</span><span className="service-icon">{createElement(icon, { size: 23, strokeWidth: 1.6 })}</span>
-                  <h3>{title}</h3><p>{text}</p><span className="service-link">Tell us what you need <ArrowRight size={16} /></span>
-                </button>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        <section className="inventory-section" id="properties">
-          <div className="wrap inventory-inner">
-            <div className="inventory-copy"><span className="eyebrow light">QUALITY OVER QUANTITY</span><h2>Good property advice<br />starts with <em>the facts.</em></h2><p>We are building a carefully maintained catalogue of available homes, resale properties and commercial spaces. Every listing should be checked with its owner or authorized agent before a viewing is arranged.</p><a href="#contact" className="button button-gold">Request current options <ArrowRight size={16} /></a></div>
-            <div className="inventory-panel">
-              <div className="inventory-icon"><ShieldCheck size={28} /></div><span className="inventory-label">THE PREM LISTING STANDARD</span><h3>Availability comes first.</h3>
-              <ul><li><Check size={16} /> Confirmed with owner or authorized agent</li><li><Check size={16} /> Clear price and property details</li><li><Check size={16} /> Viewing coordinated by a real person</li></ul>
-              <div className="inventory-status"><span className="status-dot" /> Current inventory is confirmed on request</div>
-            </div>
-          </div>
-        </section>
-
-        <section className="section areas-section" id="areas">
-          <div className="wrap">
-            <div className="section-intro area-intro"><div><span className="eyebrow">KNOW THE NEIGHBOURHOOD</span><h2>Local roots. <em>Local perspective.</em></h2></div><p>Tell us where you want to be. We’ll help narrow the search to the right neighbourhood and property type.</p></div>
-            <div className="area-grid">
-              {areas.map((area, index) => <a href="#contact" className="area-card" key={area.name} onClick={() => setLead((current) => ({ ...current, details: `Preferred area: ${area.name}` }))}>
-                <img src={area.image} alt="" loading="lazy" /><span className="area-overlay" /><span className="area-number">0{index + 1}</span><span className="area-content"><strong>{area.name}</strong><small>{area.note}</small></span><span className="area-arrow"><ArrowRight size={18} /></span>
-              </a>)}
-            </div>
-            <p className="image-note">Neighbourhood images are illustrative and do not represent a specific property listing.</p>
-          </div>
-        </section>
+        <Suspense fallback={<section className="insights-intro" aria-live="polite"><div className="wrap">Loading locality insights…</div></section>}>
+          <LocalityInsightsExplorer embedded />
+        </Suspense>
 
         <section className="about-section" id="about">
           <div className="about-photo"><img src="/assets/office.png" alt="PREM property consultation" loading="lazy" /><span className="photo-caption">PERSONAL SERVICE, BUILT OVER TIME</span></div>
