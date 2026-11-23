@@ -23,9 +23,7 @@ export function SiteHeader() {
         </button>
         <nav className={mobileMenuOpen ? 'nav-links open' : 'nav-links'} aria-label="Main navigation">
           <a href="/#search" onClick={closeMenu}>Find a property</a>
-          <a href="/#services" onClick={closeMenu}>What we do</a>
-          <a href="/#areas" onClick={closeMenu}>Explore areas</a>
-          <a href="/insights" onClick={closeMenu}>Locality insights</a>
+          <a href="/#locality-insights" onClick={closeMenu}>Locality insights</a>
           <a href="/#about" onClick={closeMenu}>Our story</a>
           <a href="/auth" onClick={closeMenu}>Sign in</a>
           <a className="nav-cta" href="/#contact" onClick={closeMenu}>Talk to our team <ArrowRight size={15} /></a>
@@ -42,7 +40,7 @@ export function SiteFooter() {
       <div className="wrap footer-main">
         <a className="brand footer-brand" href="/#home"><span className="brand-mark">P<span>.</span></span><span className="brand-copy"><strong>PREM</strong><small>PROPERTY & REAL ESTATE MARKET</small></span></a>
         <p>Residential and commercial property guidance, local market insight and future-facing predictions.</p>
-        <div className="footer-links"><a href="/#services">Services</a><a href="/#areas">Areas</a><a href="/insights">Locality insights</a><a href="/#about">About</a><a href="/#contact">Contact</a><a href="/privacy.html">Privacy</a><a href="/auth">Account sign-in</a><a href="/admin">Staff sign-in</a></div>
+        <div className="footer-links"><a href="/#locality-insights">Locality insights</a><a href="/#about">About</a><a href="/#contact">Contact</a><a href="/privacy.html">Privacy</a><a href="/auth">Account sign-in</a><a href="/admin">Staff sign-in</a></div>
       </div>
       <div className="wrap footer-bottom"><span>© {new Date().getFullYear()} PREM. All rights reserved.</span><span>Property availability and details are subject to confirmation.</span></div>
     </footer>
