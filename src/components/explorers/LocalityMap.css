@@ -1,0 +1,21 @@
+/* Generated using AppDeploy UI skill */
+.locality-map-wrap{position:relative;min-height:420px;height:100%;overflow:hidden;background:#e9e7df;border:1px solid #d8d5ca}
+.locality-map-canvas{position:absolute;inset:0;min-height:100%;width:100%}
+.locality-map-note{position:absolute;left:12px;bottom:8px;z-index:2;margin:0;padding:5px 8px;background:#fffefaed;color:#5f6259;font-size:9px;line-height:1.4}
+.locality-map-fallback,.locality-map-overlay{position:absolute;z-index:3;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:10px;padding:24px;background:rgba(245,243,237,.94);color:#5f6259;text-align:center;font-size:12px;line-height:1.6}
+.locality-map-fallback strong{color:#29382f;font:500 23px/1.2 Georgia,serif}
+.locality-map-fallback span{max-width:390px}
+.locality-map-fallback svg{color:#97784a}
+.locality-map-overlay{inset:auto 12px 34px auto;flex-direction:row;gap:8px;padding:8px 12px;background:#fffefaed;font-size:10px}
+.locality-map-overlay.map-error{inset:12px 12px auto auto;max-width:310px;border:1px solid #e3c58a}
+.map-loading-dot{width:7px;height:7px;border-radius:50%;background:#9a7a49;animation:map-pulse 1s ease-in-out infinite alternate}
+.locality-map-marker{width:14px;height:14px;padding:0;border:2px solid #fffefa;border-radius:50%;background:#8b6a3f;box-shadow:0 1px 6px #15181280;cursor:pointer;transition:transform .16s,background .16s;display:grid;place-items:center;color:#fff;font:700 10px/1 Arial,sans-serif}
+.locality-map-marker.has-count{width:32px;height:32px;border-radius:50%;border:1px solid #faf8f4;background:#26382f;box-shadow:0 2px 10px #15181245}
+.locality-map-marker.is-selected{background:#b08b52;transform:scale(1.16);z-index:2}
+.locality-map-marker:focus-visible{outline:2px solid #1e2821;outline-offset:3px}
+.mapboxgl-ctrl-group{border:1px solid #d8d5ca!important;border-radius:2px!important;box-shadow:0 2px 8px #14131218!important}
+.mapboxgl-ctrl-group button{width:36px;height:36px}
+.mapboxgl-ctrl-attrib{font-size:9px!important}
+@keyframes map-pulse{to{opacity:.4;transform:scale(.78)}}
+@media(max-width:700px){.locality-map-wrap{min-height:330px}.locality-map-note{max-width:calc(100% - 24px);font-size:8px}.locality-map-fallback{padding:18px}}
+@media(prefers-reduced-motion:reduce){.map-loading-dot{animation:none}}
