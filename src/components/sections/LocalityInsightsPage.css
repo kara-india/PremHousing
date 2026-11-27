@@ -19,8 +19,9 @@
 .insights-profile-label{display:grid;gap:5px;margin-top:20px;padding-top:15px;border-top:1px solid var(--line)}
 .insights-profile-label .eyebrow{font-size:8px}
 .insights-profile-label>span:last-child{color:#77786f;font-size:9px}
-.insights-profile-list{display:grid;gap:6px;margin-top:9px}
-.insights-profile{display:grid;grid-template-columns:16px 1fr;gap:8px;align-items:start;width:100%;padding:9px 8px;border:1px solid #e0ded5;background:#fff;text-align:left}
+.insights-profile-list{display:grid;gap:6px;margin:9px 0 0;padding:0;border:0;min-width:0}
+.insights-profile{position:relative;display:grid;grid-template-columns:16px 1fr;gap:8px;align-items:start;width:100%;padding:9px 8px;border:1px solid #e0ded5;background:#fff;text-align:left;cursor:pointer}
+.insights-profile:focus-within{outline:2px solid #9a7b4d;outline-offset:2px}
 .insights-profile.selected{border-color:#26382f;background:#f4f4ed}
 .insights-profile strong{display:block;color:#333a32;font-size:9px;line-height:1.45}
 .insights-profile small{display:block;margin-top:4px;color:#76786f;font-size:8px;line-height:1.45}
@@ -36,10 +37,10 @@
 .insights-map-controls{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:9px}
 .insights-layer-label{display:flex;align-items:center;gap:7px;color:#555a51;font-size:9px}
 .insights-layer-label svg{color:#8f734b}
+.insights-map-controls .property-view-toggle{display:flex}
 .insights-map{height:590px;min-height:440px}
 .insights-map .locality-map-wrap{min-height:100%}
 .insights-map .property-view-toggle{display:flex}
-.insights-map-controls .property-view-toggle{display:none}
 .insights-locality-list{display:grid;gap:7px;min-height:330px;padding:12px;border:1px solid var(--line);background:#f8f7f1}
 .insights-locality-list button{display:flex;align-items:center;justify-content:space-between;gap:10px;min-height:48px;padding:0 12px;border:1px solid #e2dfd5;background:#fffefa;color:#394038;text-align:left}
 .insights-locality-list button.selected{border-color:#26382f;background:#26382f;color:#fff}
@@ -94,7 +95,7 @@
 .insights-compare-card span{color:#77786f;font-size:8px;line-height:1.45}
 .insights-compare-empty{margin:12px 0 0;padding:11px;background:#f4f2ec;color:#65675f;font-size:9px;line-height:1.5}
 .insights-compare-caveat{margin:11px 0 0;color:#77786f}
-.insights-compare .visually-hidden{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+.insights-compare .visually-hidden,.insights-profile-list .visually-hidden{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
 @media(max-width:1100px){.insights-workspace{grid-template-columns:220px minmax(0,1fr)}.insights-evidence{grid-column:1/-1;display:grid;grid-template-columns:1fr 1fr;gap:12px;align-items:start}.insights-evidence .insights-panel-heading,.insights-stat,.insights-selected-records,.insights-evidence-note,.insights-unavailable,.insights-contact-link{margin:0}.insights-selected-records{grid-column:1/-1;grid-template-columns:repeat(2,minmax(0,1fr))}.insights-view-all{grid-column:1/-1}.insights-contact-link{align-self:center}.insights-cap-note{grid-column:1/-1}}
 @media(max-width:720px){.insights-intro{padding:37px 0 25px}.insights-intro-row{display:block}.insights-intro h1,.insights-intro h2{font-size:40px}.insights-intro p{font-size:11px}.insights-asof{margin-top:15px}.insights-workspace{grid-template-columns:1fr;padding-top:14px;gap:10px}.insights-requirements{order:0}.insights-map-column{order:1}.insights-evidence{order:2;grid-column:auto;display:block}.insights-evidence>*+*{margin-top:10px}.insights-profile-list{grid-template-columns:1fr}.insights-map{height:390px;min-height:350px}.insights-map-controls .property-view-toggle{display:flex}.insights-map-legend{display:grid;gap:4px}.insights-result-context>span{max-width:110px}.insights-selected-records{display:grid;grid-template-columns:1fr}.insights-profile{padding:8px}.insights-requirements{padding:13px}.insights-profile small{max-width:420px}}
 @media(max-width:390px){.insights-intro h1,.insights-intro h2{font-size:35px}.insights-result-context strong{font-size:16px}.insights-map{height:350px}}

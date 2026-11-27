@@ -124,16 +124,21 @@ export function LocalityInsightsExplorer({ embedded = false }) {
           <label className="insights-field">Property type<select value={propertyType} onChange={(event) => setPropertyType(event.target.value)}><option value="residential">Residential</option><option value="commercial">Commercial</option><option value="any">Any property</option></select></label>
           {propertyType !== 'commercial' && <label className="insights-field">Bedrooms<select value={bedrooms} onChange={(event) => setBedrooms(event.target.value)}><option value="any">Any BHK</option><option value="1">1 BHK</option><option value="2">2 BHK</option><option value="3">3+ BHK</option></select></label>}
           <div className="insights-profile-label"><span className="eyebrow">YOUR PREFERENCE</span><span>Choose a lens to guide your review</span></div>
-          <div className="insights-profile-list" role="radiogroup" aria-label="Preference profile">
-            {profiles.map((profile) => <button key={profile.id} type="button" role="radio" aria-checked={profile.id === profileId} className={`insights-profile${profile.id === profileId ? ' selected' : ''}`} onClick={() => setProfileId(profile.id)}>
+          <fieldset className="insights-profile-list">
+            <legend className="visually-hidden">Preference profile</legend>
+            {profiles.map((profile) => <label key={profile.id} className={`insights-profile${profile.id === profileId ? ' selected' : ''}`}>
+              <input className="visually-hidden" type="radio" name="locality-preference-profile" value={profile.id} checked={profile.id === profileId} onChange={() => setProfileId(profile.id)} />
               <span className="insights-radio" aria-hidden="true">{profile.id === profileId && <Check size={11} />}</span><span><strong>{profile.title}</strong><small>{profile.description}</small></span>
-            </button>)}
-          </div>
-          <button className="button button-dark insights-apply" type="button" onClick={() => document.getElementById('locality-results')?.scrollIntoView({ behavior: 'smooth', block: 'center' })}><Search size={15} /> Update exploration</button>
+            </label>)}
+          </fieldset>
+          <button className="button button-dark insights-apply" type="button" onClick={() => {
+            const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+            document.getElementById('locality-results')?.scrollIntoView({ behavior: reduceMotion ? 'auto' : 'smooth', block: 'center' });
+          }}><Search size={15} /> Update exploration</button>
         </aside>
 
         <div className="insights-map-column">
-          <div className="insights-result-context"><div><span className="eyebrow">{selectedProfile.title}</span><strong>{loadState === 'loading' ? 'Loading published properties…' : `${filteredProperties.length} matching ${filteredProperties.length === 1 ? 'property' : 'properties'}`}</strong></div><span>Locality centres are approximate</span></div>
+          <div className="insights-result-context"><div><span className="eyebrow">{selectedProfile.title}</span><strong aria-live="polite" aria-atomic="true">{loadState === 'loading' ? 'Loading published properties…' : loadState === 'error' ? 'Published properties could not be loaded' : loadState === 'unavailable' ? 'Inventory is unavailable' : `${filteredProperties.length} matching ${filteredProperties.length === 1 ? 'property' : 'properties'}`}</strong></div><span>Locality centres are approximate</span></div>
           <div className="insights-map-controls">
             <div className="insights-layer-label"><Compass size={15} /><span>PREM published inventory by locality</span></div>
             <div className="property-view-toggle" role="group" aria-label="Locality view">

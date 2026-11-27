@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import mapboxgl from 'mapbox-gl';
+import * as mapboxgl from 'mapbox-gl/esm';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import { AlertTriangle, MapPin } from 'lucide-react';
 import { geocodeLocalities, hasMapboxToken, isMapboxResourceError, mapboxAccessToken } from '../../lib/mapbox.js';
