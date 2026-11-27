@@ -116,8 +116,8 @@ insert into public.properties (
     title, property_type, transaction_type, status, locality_id, address,
     price, area_sqft, bedrooms, bathrooms, furnishing, builder, features, source_name, source_url
 )
-select 
-    i.title, 
+select
+    i.title,
     'apartment'::public.property_type,
     'sale'::public.transaction_type,
     'draft'::public.property_status,
@@ -148,7 +148,7 @@ where not exists (
     where p.title = i.title
       and p.price = i.price
       and coalesce(p.area_sqft, -1) = coalesce(i.area, -1)
-      and coalesce(p.builder, '') = coalesce(i.builder, '') 
+      and coalesce(p.builder, '') = coalesce(i.builder, '')
       and coalesce(p.bedrooms, -1) = coalesce(i.beds::smallint, -1)
 );
 

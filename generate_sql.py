@@ -48,14 +48,14 @@ def main():
         for row in unique_rows:
             title = clean_sql(row['title'])
             price = parse_price(row['sale_value'])
-            
+
             # Use carpet_area if available, else super_area
             area = row['carpet_area'] if row['carpet_area'] else row['super_area']
             area = float(area) if area else "null"
-            
+
             beds = row['bhk'] if row['bhk'] else "null"
             baths = row['bathrooms'] if row['bathrooms'] else "null"
-            
+
             furnishing = row['furnishing'].lower() if row['furnishing'] else "null"
             if furnishing not in ("'unfurnished'", "'semi-furnished'", "'furnished'") and furnishing != "null":
                 furnishing = f"'{furnishing}'"
@@ -90,8 +90,8 @@ insert into public.properties (
     title, property_type, transaction_type, status, locality_id, address,
     price, area_sqft, bedrooms, bathrooms, furnishing, builder, features, source_name, source_url
 )
-select 
-    i.title, 
+select
+    i.title,
     'apartment'::public.property_type,
     'sale'::public.transaction_type,
     'draft'::public.property_status,
@@ -122,7 +122,7 @@ where not exists (
     where p.title = i.title
       and p.price = i.price
       and coalesce(p.area_sqft, -1) = coalesce(i.area, -1)
-      and coalesce(p.builder, '') = coalesce(i.builder, '') 
+      and coalesce(p.builder, '') = coalesce(i.builder, '')
       and coalesce(p.bedrooms, -1) = coalesce(i.beds::smallint, -1)
 );
 

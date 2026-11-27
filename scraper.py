@@ -14,7 +14,7 @@ SEARCH_URL = (
     "&cityName=Mumbai&Locality=Mira-Road"
 )
 OUTPUT_CSV = "mira_road_ultra_detailed.csv"
-MAX_PAGES = 10 
+MAX_PAGES = 10
 DELAY = 3.0
 
 def parse_summary(summary_text: str, title: str) -> dict:
@@ -22,10 +22,10 @@ def parse_summary(summary_text: str, title: str) -> dict:
     data = {
         "building_name": "", "bhk": "", "carpet_area": "", "super_area": "",
         "status": "", "possession_date": "", "transaction_type": "",
-        "furnishing": "", "floor": "", "facing": "", "bathrooms": "", 
+        "furnishing": "", "floor": "", "facing": "", "bathrooms": "",
         "balconies": "", "overlooking": "", "parking": ""
     }
-    
+
     # 1. Building Name (from "Society | XYZ" or Title)
     society_match = re.search(r'Society\s*\|\s*([^|]+)', summary_text)
     if society_match:
@@ -87,7 +87,7 @@ def parse_summary(summary_text: str, title: str) -> dict:
 def main():
     all_rows = []
     print("=== Launching browser ===")
-    
+
     with sync_playwright() as p:
         browser = p.chromium.launch(headless=True)
         context = browser.new_context(
@@ -98,7 +98,7 @@ def main():
         for page_num in range(1, MAX_PAGES + 1):
             url = SEARCH_URL if page_num == 1 else f"{SEARCH_URL}&page={page_num}"
             print(f"[*] Loading Search Page {page_num}")
-            
+
             response = page.goto(url, timeout=60000)
             if response and response.status in (401, 403, 429):
                 print(f"[!] Access denied or rate limited (HTTP {response.status}); stopping without retry.")
@@ -106,7 +106,7 @@ def main():
             time.sleep(random.uniform(2.0, 4.0))
             page.mouse.wheel(0, 500)
             time.sleep(random.uniform(1.0, 2.0))
-            
+
             try:
                 page.wait_for_selector("div.mb-srp__card", timeout=15000)
             except Exception:
@@ -115,21 +115,21 @@ def main():
             soup = BeautifulSoup(page.content(), "html.parser")
             cards = soup.select("div.mb-srp__card")
             print(f"  -> Found {len(cards)} cards")
-            
+
             for card in cards:
                 try:
                     title_tag = card.select_one("h2")
                     title = title_tag.get_text(" ", strip=True) if title_tag else ""
-                    
+
                     price_tag = card.select_one(".mb-srp__card__price--amount")
                     price = price_tag.get_text(" ", strip=True) if price_tag else ""
-                    
+
                     summary_tag = card.select_one(".mb-srp__card__summary")
                     summary = summary_tag.get_text(" | ", strip=True) if summary_tag else ""
-                    
+
                     # Parse the rich data from the summary text
                     parsed_data = parse_summary(summary, title)
-                    
+
                     row = {
                         "title": title,
                         "sale_value": price,
@@ -139,14 +139,14 @@ def main():
                     all_rows.append(row)
                 except Exception as e:
                     pass
-            
+
             time.sleep(DELAY)
         browser.close()
 
     if not all_rows: return
 
     fieldnames = ["title", "sale_value", "building_name", "bhk", "carpet_area", "super_area", "status", "possession_date", "transaction_type", "furnishing", "floor", "facing", "bathrooms", "balconies", "overlooking", "parking", "raw_summary"]
-    
+
     with open(OUTPUT_CSV, "w", newline="", encoding="utf-8") as f:
         writer = csv.DictWriter(f, fieldnames=fieldnames)
         writer.writeheader()
